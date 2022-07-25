@@ -1,13 +1,30 @@
 package main
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"log"
+	"os"
+
+	"github.com/gofiber/fiber/v2"
+	"github.com/joho/godotenv"
+	"github.com/thenewsatria/seenaoo-backend/database"
+)
 
 func main() {
-    app := fiber.New()
+	// loading env variables
+	if err := godotenv.Load(); err != nil {
+		log.Fatal("Error loading environtment variables")
+	}
 
-    app.Get("/", func(c *fiber.Ctx) error {
-        return c.SendString("Hello, World!")
-    })
+	database.ConnectDB(os.Getenv("DB_USERNAME"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_HOSTNAME"), os.Getenv("DB_PORT"))
+	database.PingDB()
 
-    app.Listen(":3000")
+	app := fiber.New()
+	app.Get("/", func(c *fiber.Ctx) error {
+		return c.SendString("Hello, World!")
+	})
+
+	app.Listen(":3000")
+
+	defer database.CancelDBContext()
+	defer database.DisconnectDB()
 }
