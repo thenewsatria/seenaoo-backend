@@ -12,6 +12,7 @@ import (
 var ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
 var client *mongo.Client
 var err error
+var databaseName string
 
 func ConnectDB(dbUsername, dbPassword, dbHostName, dbPort string) {
 	credential := options.Credential{
@@ -38,8 +39,8 @@ func PingDB() {
 	}
 }
 
-func GetDBContext() *context.Context {
-	return &ctx
+func GetDBContext() context.Context {
+	return ctx
 }
 
 func CancelDBContext() {
@@ -48,4 +49,12 @@ func CancelDBContext() {
 
 func GetDBClient() *mongo.Client {
 	return client
+}
+
+func UseDB() *mongo.Database {
+	return client.Database(databaseName)
+}
+
+func SetDBName(dbName string) {
+	databaseName = dbName
 }

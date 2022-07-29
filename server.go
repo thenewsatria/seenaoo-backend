@@ -6,6 +6,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
+	"github.com/thenewsatria/seenaoo-backend/api/routes"
 	"github.com/thenewsatria/seenaoo-backend/database"
 )
 
@@ -17,11 +18,11 @@ func main() {
 
 	database.ConnectDB(os.Getenv("DB_USERNAME"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_HOSTNAME"), os.Getenv("DB_PORT"))
 	database.PingDB()
+	database.SetDBName(os.Getenv("DB_NAME"))
 
 	app := fiber.New()
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString("Hello, World!")
-	})
+
+	routes.SetRouter(app)
 
 	app.Listen(":3000")
 
