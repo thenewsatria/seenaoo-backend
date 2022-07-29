@@ -12,32 +12,29 @@ import (
 )
 
 type Repository interface {
-	CreateFlashcard(flashcard *models.Flashcard) (*models.Flashcard, error)
-	// 	ReadFlashcards() ([]*models.Flashcard, error)
-	ReadFlashcard(flashcardId *models.ReadFlashcardRequest) (*models.Flashcard, error)
-	// 	UpdateFlashcard(flashcardId *models.ReadFlashcardRequest, flashcard *models.Flashcard) (*models.Flashcard, error)
-	// 	DeleteFlashcard(flashcardId *models.DeleteFlashcardRequest) (*models.Flashcard, error)
+	CreateFlashcard(f *models.Flashcard) (*models.Flashcard, error)
+	ReadFlashcard(fId *models.ReadFlashcardRequest) (*models.Flashcard, error)
 }
 
 type repository struct {
 	Collection *mongo.Collection
 }
 
-func (r *repository) CreateFlashcard(flashcard *models.Flashcard) (*models.Flashcard, error) {
-	flashcard.ID = primitive.NewObjectID()
-	flashcard.CreatedAt = time.Now()
-	flashcard.UpdatedAt = time.Now()
+func (r *repository) CreateFlashcard(f *models.Flashcard) (*models.Flashcard, error) {
+	f.ID = primitive.NewObjectID()
+	f.CreatedAt = time.Now()
+	f.UpdatedAt = time.Now()
 
-	_, err := r.Collection.InsertOne(database.GetDBContext(), flashcard)
+	_, err := r.Collection.InsertOne(database.GetDBContext(), f)
 	if err != nil {
 		return nil, err
 	}
-	return flashcard, nil
+	return f, nil
 }
 
-func (r *repository) ReadFlashcard(flashcardId *models.ReadFlashcardRequest) (*models.Flashcard, error) {
+func (r *repository) ReadFlashcard(fId *models.ReadFlashcardRequest) (*models.Flashcard, error) {
 	flashcard := &models.Flashcard{}
-	id, err := primitive.ObjectIDFromHex(flashcardId.ID)
+	id, err := primitive.ObjectIDFromHex(fId.ID)
 	if err != nil {
 		return nil, errors.New("Invalid flashcard id")
 	}
@@ -48,16 +45,6 @@ func (r *repository) ReadFlashcard(flashcardId *models.ReadFlashcardRequest) (*m
 
 	return flashcard, nil
 }
-
-// // ReadFlashcards implements FlashcardRepository
-// func (*flashcardRepository) ReadFlashcards() ([]*models.Flashcard, error) {
-// 	panic("unimplemented")
-// }
-
-// // UpdateFlashcard implements FlashcardRepository
-// func (*flashcardRepository) UpdateFlashcard(flashcardId *models.ReadFlashcardRequest, flashcard *models.Flashcard) (*models.Flashcard, error) {
-// 	panic("unimplemented")
-// }
 
 func NewRepo(collection *mongo.Collection) Repository {
 	return &repository{

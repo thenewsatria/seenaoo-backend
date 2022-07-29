@@ -4,6 +4,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/thenewsatria/seenaoo-backend/api/handlers"
 	"github.com/thenewsatria/seenaoo-backend/database"
+	"github.com/thenewsatria/seenaoo-backend/pkg/flashcardhints"
 	"github.com/thenewsatria/seenaoo-backend/pkg/flashcards"
 )
 
@@ -12,8 +13,12 @@ func flashcardRouter(app fiber.Router) {
 
 	flashcardCollection := database.UseDB().Collection(flashcards.CollectionName)
 	flashcardRepo := flashcards.NewRepo(flashcardCollection)
-	service := flashcards.NewService(flashcardRepo)
+	flashcardService := flashcards.NewService(flashcardRepo)
 
-	flashcardRoutes.Get("/:flashcardId", handlers.GetFlashcard(service))
-	flashcardRoutes.Post("/", handlers.AddFlashcard(service))
+	flashcardHintCollection := database.UseDB().Collection(flashcardhints.CollectionName)
+	flashcardHintRepo := flashcardhints.NewRepo(flashcardHintCollection)
+	flashcardHintService := flashcardhints.NewService(flashcardHintRepo)
+
+	flashcardRoutes.Get("/:flashcardId", handlers.GetFlashcard(flashcardService, flashcardHintService))
+	flashcardRoutes.Post("/", handlers.AddFlashcard(flashcardService))
 }

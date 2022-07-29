@@ -5,6 +5,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/thenewsatria/seenaoo-backend/api/presenters"
+	"github.com/thenewsatria/seenaoo-backend/pkg/flashcardhints"
 	"github.com/thenewsatria/seenaoo-backend/pkg/flashcards"
 	"github.com/thenewsatria/seenaoo-backend/pkg/models"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -28,10 +29,10 @@ func AddFlashcard(service flashcards.Service) fiber.Handler {
 	}
 }
 
-func GetFlashcard(service flashcards.Service) fiber.Handler {
+func GetFlashcard(flashcardService flashcards.Service, flashcardHintService flashcardhints.Service) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		flashcardId := &models.ReadFlashcardRequest{ID: c.Params("flashcardId")}
-		result, err := service.FetchFlashcard(flashcardId)
+		result, err := flashcardService.FetchFlashcard(flashcardId)
 		if err != nil {
 			if err == mongo.ErrNoDocuments {
 				c.Status(http.StatusNotFound)
@@ -41,7 +42,8 @@ func GetFlashcard(service flashcards.Service) fiber.Handler {
 			return c.JSON(presenters.FlashcardErrorResponse(err))
 		}
 
+		hints, err := flashcardHintService.PopulateFlashcard(flashcardId)
 		c.Status(http.StatusOK)
-		return c.JSON(presenters.FlashcardReadSuccessResponse(result, []presenters.FlashcardHint{}))
+		return c.JSON(presenters.FlashcardReadSuccessResponse(result, hints))
 	}
 }

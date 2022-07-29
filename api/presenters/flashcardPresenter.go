@@ -41,7 +41,7 @@ func FlashcardInsertSuccessResponse(f *models.Flashcard) *fiber.Map {
 	}
 }
 
-func FlashcardReadSuccessResponse(f *models.Flashcard, hints []FlashcardHint) *fiber.Map {
+func FlashcardReadSuccessResponse(f *models.Flashcard, hints *[]models.FlashcardHint) *fiber.Map {
 	flashcard := &Flashcard{
 		ID:               f.ID,
 		FrontImagePath:   f.FrontImagePath,
@@ -52,8 +52,18 @@ func FlashcardReadSuccessResponse(f *models.Flashcard, hints []FlashcardHint) *f
 		FlashCardCoverId: f.FlashCardCoverId,
 		CreatedAt:        f.CreatedAt,
 		UpdatedAt:        f.UpdatedAt,
-		Hints:            hints,
+		Hints:            []FlashcardHint{},
 	}
+
+	for _, v := range *hints {
+		flashcardHint := &FlashcardHint{
+			ID:       v.ID,
+			HintText: v.HintText,
+		}
+
+		flashcard.Hints = append(flashcard.Hints, *flashcardHint)
+	}
+
 	return &fiber.Map{
 		"status": true,
 		"data":   flashcard,
