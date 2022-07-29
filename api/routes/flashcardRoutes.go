@@ -15,5 +15,5 @@ func flashcardRouter(app fiber.Router) {
 	service := flashcards.NewService(flashcardRepo)
 
 	flashcardRoutes.Get("/:flashcardId", handlers.GetFlashcard(service))
-	flashcardRoutes.Post("/", handlers.AddBook(service))
+	flashcardRoutes.Post("/", handlers.AddFlashcard(service))
 }

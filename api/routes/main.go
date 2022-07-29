@@ -16,4 +16,5 @@ func Router(app *fiber.App) {
 	apiV1 := api.Group("/v1")
 
 	flashcardRouter(apiV1)
+	flashcardHintRouter(apiV1)
 }

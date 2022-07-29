@@ -10,7 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func AddBook(service flashcards.Service) fiber.Handler {
+func AddFlashcard(service flashcards.Service) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		flashcard := &models.Flashcard{}
 		if err := c.BodyParser(flashcard); err != nil {

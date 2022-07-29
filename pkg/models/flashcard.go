@@ -23,5 +23,5 @@ type DeleteFlashcardRequest struct {
 }
 
 type ReadFlashcardRequest struct {
-	ID string `json:"id" bson:"_id"`
+	ID string `json:"id"`
 }
