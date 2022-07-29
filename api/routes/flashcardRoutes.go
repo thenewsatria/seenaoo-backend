@@ -3,24 +3,17 @@ package routes
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/thenewsatria/seenaoo-backend/api/handlers"
+	"github.com/thenewsatria/seenaoo-backend/database"
+	"github.com/thenewsatria/seenaoo-backend/pkg/flashcards"
 )
 
 func flashcardRouter(app fiber.Router) {
 	flashcardRoutes := app.Group("/flashcard")
 
-	flashcardRoutes.Get("/", func(c *fiber.Ctx) error {
-		return c.JSON(fiber.Map{
-			"status":  200,
-			"message": "success",
-		})
-	})
+	flashcardCollection := database.UseDB().Collection(flashcards.CollectionName)
+	flashcardRepo := flashcards.NewRepo(flashcardCollection)
+	service := flashcards.NewService(flashcardRepo)
 
-	flashcardRoutes.Get("/test", func(c *fiber.Ctx) error {
-		return c.JSON(fiber.Map{
-			"status":  200,
-			"message": "success",
-		})
-	})
-
-	flashcardRoutes.Post("/", handlers.CreateFlashcard)
+	flashcardRoutes.Get("/:flashcardId", handlers.GetFlashcard(service))
+	flashcardRoutes.Post("/", handlers.AddBook(service))
 }

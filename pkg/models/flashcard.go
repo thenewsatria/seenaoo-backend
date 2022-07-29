@@ -6,8 +6,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-var FlashCardCollectionName = "flashcards"
-
 type Flashcard struct {
 	ID               primitive.ObjectID `bson:"_id" json:"id"`
 	FrontImagePath   string             `bson:"front_image_path" json:"frontImagePath"`
@@ -18,4 +16,12 @@ type Flashcard struct {
 	FlashCardCoverId primitive.ObjectID `bson:"flashcard_cover_id" json:"flashcardCoverId"`
 	CreatedAt        time.Time          `bson:"created_at" json:"created_at"`
 	UpdatedAt        time.Time          `bson:"updated_at" json:"updated_at"`
+}
+
+type DeleteFlashcardRequest struct {
+	ID string `json:"id"`
+}
+
+type ReadFlashcardRequest struct {
+	ID string `json:"id" bson:"_id"`
 }

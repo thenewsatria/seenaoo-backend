@@ -2,14 +2,14 @@ package database
 
 import (
 	"context"
-	"time"
+	"log"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
-var ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
+var ctx, cancel = context.WithCancel(context.Background())
 var client *mongo.Client
 var err error
 var databaseName string
@@ -23,19 +23,20 @@ func ConnectDB(dbUsername, dbPassword, dbHostName, dbPort string) {
 	clientOpts := options.Client().ApplyURI("mongodb://" + dbHostName + ":" + dbPort).SetAuth(credential)
 	client, err = mongo.Connect(ctx, clientOpts)
 	if err != nil {
-		panic(err)
+		cancel()
+		log.Fatal("Database Connection Error $s", err)
 	}
 }
 
 func DisconnectDB() {
 	if err := client.Disconnect(ctx); err != nil {
-		panic(err)
+		log.Fatal("Error while disconnecting database $s", err)
 	}
 }
 
 func PingDB() {
 	if err := client.Ping(ctx, readpref.Primary()); err != nil {
-		panic(err)
+		log.Fatal("Error while pinging database $s", err)
 	}
 }
 

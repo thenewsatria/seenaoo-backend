@@ -1,34 +1,47 @@
 package handlers
 
 import (
+	"net/http"
+
 	"github.com/gofiber/fiber/v2"
-	"github.com/thenewsatria/seenaoo-backend/database"
+	"github.com/thenewsatria/seenaoo-backend/api/presenters"
+	"github.com/thenewsatria/seenaoo-backend/pkg/flashcards"
 	"github.com/thenewsatria/seenaoo-backend/pkg/models"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
-var CreateFlashcard = func(c *fiber.Ctx) error {
-	collection := database.UseDB().Collection(models.FlashCardCollectionName)
-	newFlashcard := new(models.Flashcard)
+func AddBook(service flashcards.Service) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		flashcard := &models.Flashcard{}
+		if err := c.BodyParser(flashcard); err != nil {
+			c.Status(http.StatusBadRequest)
+			return c.JSON(presenters.FlashcardErrorResponse(err))
+		}
+		result, err := service.InsertFlashcard(flashcard)
+		if err != nil {
+			c.Status(http.StatusInternalServerError)
+			return c.JSON(presenters.FlashcardErrorResponse(err))
+		}
 
-	if err := c.BodyParser(newFlashcard); err != nil {
-		return c.JSON(fiber.Map{
-			"status":     "error",
-			"statusCode": 400,
-			"message":    err.Error(),
-		})
+		c.Status(http.StatusCreated)
+		return c.JSON(presenters.FlashcardInsertSuccessResponse(result))
 	}
+}
 
-	_, err := collection.InsertOne(database.GetDBContext(), newFlashcard)
-	if err != nil {
-		return c.JSON(fiber.Map{
-			"status":     "error",
-			"statusCode": 400,
-			"message":    err.Error(),
-		})
+func GetFlashcard(service flashcards.Service) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		flashcardId := &models.ReadFlashcardRequest{ID: c.Params("flashcardId")}
+		result, err := service.FetchFlashcard(flashcardId)
+		if err != nil {
+			if err == mongo.ErrNoDocuments {
+				c.Status(http.StatusNotFound)
+				return c.JSON(presenters.FlashCardNotFound())
+			}
+			c.Status(http.StatusInternalServerError)
+			return c.JSON(presenters.FlashcardErrorResponse(err))
+		}
+
+		c.Status(http.StatusOK)
+		return c.JSON(presenters.FlashcardReadSuccessResponse(result, []presenters.FlashcardHint{}))
 	}
-
-	return c.JSON(fiber.Map{
-		"status":  "success",
-		"message": "item created",
-	})
 }

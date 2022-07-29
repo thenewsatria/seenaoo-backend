@@ -22,10 +22,10 @@ func main() {
 
 	app := fiber.New()
 
-	routes.SetRouter(app)
+	routes.Router(app)
 
 	app.Listen(":3000")
 
-	defer database.CancelDBContext()
 	defer database.DisconnectDB()
+	defer database.CancelDBContext()
 }
