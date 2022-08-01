@@ -18,3 +18,11 @@ type User struct {
 	CreatedAt       time.Time          `bson:"created_at" json:"createdAt"`
 	UpdatedAt       time.Time          `bson:"updated_at" json:"updatedAt"`
 }
+
+type UserByEmailRequest struct {
+	Email string `bson:"email" json:"email"`
+}
+
+type UserByUsernameRequest struct {
+	Username string `bson:"username" json:"username"`
+}

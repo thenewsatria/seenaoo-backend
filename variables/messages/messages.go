@@ -12,3 +12,7 @@ var FLASHCARD_HINT_FAIL_TO_INSERT_ERROR_MESSAGE = "Error parsing hint body reque
 var USER_BODY_PARSER_ERROR_MESSAGE = "Error parsing user body request"
 var USER_FAIL_TO_HASH_PASSWORD = "Error hashing user password"
 var USER_FAIL_TO_INSERT_ERROR_MESSAGE = "Failed to insert user to database"
+var USER_EMAIL_ALREADY_USED = "Email already used"
+var USER_USERNAME_ALREADY_USED = "Username already used"
+
+var AUTH_FAIL_TO_GENERATE_TOKEN = "Failed to generate token"
