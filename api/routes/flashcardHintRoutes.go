@@ -12,7 +12,7 @@ func flashcardHintRouter(app fiber.Router) {
 
 	flashcardHintCollection := database.UseDB().Collection(flashcardhints.CollectionName)
 	flashcardRepo := flashcardhints.NewRepo(flashcardHintCollection)
-	service := flashcardhints.NewService(flashcardRepo)
+	Service := flashcardhints.NewService(flashcardRepo)
 
-	flashcardHintRoutes.Post("/", handlers.AddFlashcardHint(service))
+	flashcardHintRoutes.Post("/", handlers.AddFlashcardHint(Service))
 }

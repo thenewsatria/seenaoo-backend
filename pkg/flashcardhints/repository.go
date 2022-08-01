@@ -14,7 +14,7 @@ import (
 
 type Repository interface {
 	CreateFlashcardHint(fh *models.FlashcardHint) (*models.FlashcardHint, error)
-	PopulateFlashcard(fId *models.ReadFlashcardRequest) (*[]models.FlashcardHint, error)
+	GetFlashcardHintsByFlashcardId(fId *models.ReadFlashcardRequest) (*[]models.FlashcardHint, error)
 }
 
 type repository struct {
@@ -27,7 +27,7 @@ func NewRepo(collection *mongo.Collection) Repository {
 	}
 }
 
-func (r *repository) PopulateFlashcard(fId *models.ReadFlashcardRequest) (*[]models.FlashcardHint, error) {
+func (r *repository) GetFlashcardHintsByFlashcardId(fId *models.ReadFlashcardRequest) (*[]models.FlashcardHint, error) {
 	var hints = []models.FlashcardHint{}
 	flashcardId, err := primitive.ObjectIDFromHex(fId.ID)
 	if err != nil {

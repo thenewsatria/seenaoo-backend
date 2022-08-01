@@ -17,7 +17,7 @@ func (s *service) InsertFlashcardHint(flashcardHint *models.FlashcardHint) (*mod
 }
 
 func (s *service) PopulateFlashcard(flashcardId *models.ReadFlashcardRequest) (*[]models.FlashcardHint, error) {
-	return s.repository.PopulateFlashcard(flashcardId)
+	return s.repository.GetFlashcardHintsByFlashcardId(flashcardId)
 }
 
 func NewService(r Repository) Service {
