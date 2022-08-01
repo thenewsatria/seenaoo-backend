@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"os"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
@@ -16,9 +15,8 @@ func main() {
 		log.Fatal("Error loading environtment variables")
 	}
 
-	database.ConnectDB(os.Getenv("DB_USERNAME"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_HOSTNAME"), os.Getenv("DB_PORT"))
+	database.ConnectDB()
 	database.PingDB()
-	database.SetDBName(os.Getenv("DB_NAME"))
 
 	app := fiber.New()
 

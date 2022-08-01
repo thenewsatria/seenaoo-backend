@@ -70,20 +70,3 @@ func FlashcardReadSuccessResponse(f *models.Flashcard, hints *[]models.Flashcard
 		"error":  nil,
 	}
 }
-
-func FlashcardErrorResponse(err error) *fiber.Map {
-	return &fiber.Map{
-		"status": false,
-		"data":   "",
-		"error":  err.Error(),
-	}
-}
-
-func FlashCardNotFound() *fiber.Map {
-	return &fiber.Map{
-		"status": false,
-		"data":   "",
-		"error":  "Flashcard with defined id not found",
-	}
-
-}

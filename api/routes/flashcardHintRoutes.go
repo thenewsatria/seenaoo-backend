@@ -3,16 +3,11 @@ package routes
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/thenewsatria/seenaoo-backend/api/handlers"
-	"github.com/thenewsatria/seenaoo-backend/database"
 	"github.com/thenewsatria/seenaoo-backend/pkg/flashcardhints"
 )
 
-func flashcardHintRouter(app fiber.Router) {
+func flashcardHintRouter(app fiber.Router, flashcardHintService flashcardhints.Service) {
 	flashcardHintRoutes := app.Group("/flashcard-hint")
 
-	flashcardHintCollection := database.UseDB().Collection(flashcardhints.CollectionName)
-	flashcardRepo := flashcardhints.NewRepo(flashcardHintCollection)
-	Service := flashcardhints.NewService(flashcardRepo)
-
-	flashcardHintRoutes.Post("/", handlers.AddFlashcardHint(Service))
+	flashcardHintRoutes.Post("/", handlers.AddFlashcardHint(flashcardHintService))
 }

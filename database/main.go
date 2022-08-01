@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"log"
+	"os"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -14,18 +15,20 @@ var client *mongo.Client
 var err error
 var databaseName string
 
-func ConnectDB(dbUsername, dbPassword, dbHostName, dbPort string) {
+func ConnectDB() {
 	credential := options.Credential{
-		Username: dbUsername,
-		Password: dbPassword,
+		Username: os.Getenv("DB_USERNAME"),
+		Password: os.Getenv("DB_PASSWORD"),
 	}
 
-	clientOpts := options.Client().ApplyURI("mongodb://" + dbHostName + ":" + dbPort).SetAuth(credential)
+	clientOpts := options.Client().ApplyURI("mongodb://" + os.Getenv("DB_HOSTNAME") + ":" + os.Getenv("DB_PORT")).SetAuth(credential)
 	client, err = mongo.Connect(ctx, clientOpts)
 	if err != nil {
 		cancel()
 		log.Fatal("Database Connection Error $s", err)
 	}
+
+	databaseName = os.Getenv("DB_NAME")
 }
 
 func DisconnectDB() {
@@ -54,8 +57,4 @@ func GetDBClient() *mongo.Client {
 
 func UseDB() *mongo.Database {
 	return client.Database(databaseName)
-}
-
-func SetDBName(dbName string) {
-	databaseName = dbName
 }

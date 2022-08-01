@@ -22,11 +22,3 @@ func FlashcardHintInsertSuccessResponse(fh *models.FlashcardHint) *fiber.Map {
 		"error":  nil,
 	}
 }
-
-func FlashcardHintErrorResponse(err error) *fiber.Map {
-	return &fiber.Map{
-		"status": false,
-		"data":   "",
-		"error":  err.Error(),
-	}
-}
