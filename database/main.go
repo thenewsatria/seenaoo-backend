@@ -2,44 +2,49 @@ package database
 
 import (
 	"context"
-	"time"
+	"log"
+	"os"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
-var ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
+var ctx, cancel = context.WithCancel(context.Background())
 var client *mongo.Client
 var err error
+var databaseName string
 
-func ConnectDB(dbUsername, dbPassword, dbHostName, dbPort string) {
+func ConnectDB() {
 	credential := options.Credential{
-		Username: dbUsername,
-		Password: dbPassword,
+		Username: os.Getenv("DB_USERNAME"),
+		Password: os.Getenv("DB_PASSWORD"),
 	}
 
-	clientOpts := options.Client().ApplyURI("mongodb://" + dbHostName + ":" + dbPort).SetAuth(credential)
+	clientOpts := options.Client().ApplyURI("mongodb://" + os.Getenv("DB_HOSTNAME") + ":" + os.Getenv("DB_PORT")).SetAuth(credential)
 	client, err = mongo.Connect(ctx, clientOpts)
 	if err != nil {
-		panic(err)
+		cancel()
+		log.Fatal("Database Connection Error $s", err)
 	}
+
+	databaseName = os.Getenv("DB_NAME")
 }
 
 func DisconnectDB() {
 	if err := client.Disconnect(ctx); err != nil {
-		panic(err)
+		log.Fatal("Error while disconnecting database $s", err)
 	}
 }
 
 func PingDB() {
 	if err := client.Ping(ctx, readpref.Primary()); err != nil {
-		panic(err)
+		log.Fatal("Error while pinging database $s", err)
 	}
 }
 
-func GetDBContext() *context.Context {
-	return &ctx
+func GetDBContext() context.Context {
+	return ctx
 }
 
 func CancelDBContext() {
@@ -48,4 +53,8 @@ func CancelDBContext() {
 
 func GetDBClient() *mongo.Client {
 	return client
+}
+
+func UseDB() *mongo.Database {
+	return client.Database(databaseName)
 }
