@@ -16,3 +16,7 @@ var USER_EMAIL_ALREADY_USED = "Email already used"
 var USER_USERNAME_ALREADY_USED = "Username already used"
 
 var AUTH_FAIL_TO_GENERATE_TOKEN = "Failed to generate token"
+var AUTH_BODY_PARSER_ERROR_MESSAGE = "Error parsing user credential body request"
+var AUTH_EMAIL_INCORRECT = "Provided email is incorrect"
+var AUTH_USERNAME_INCORRECT = "Provided username is incorrect"
+var AUTH_PASSWORD_INCORRECT = "Provided password is incorrect"

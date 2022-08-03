@@ -37,5 +37,5 @@ func Router(app *fiber.App) {
 
 	flashcardRouter(apiV1, flashcardService, flashcardHintService)
 	flashcardHintRouter(apiV1, flashcardHintService)
-	userRouter(apiV1, userService)
+	authenticationRouter(apiV1, userService)
 }
