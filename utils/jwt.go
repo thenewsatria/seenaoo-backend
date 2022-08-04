@@ -31,3 +31,22 @@ func GenerateJWT(user *models.User) (string, error) {
 
 	return tokenStr, nil
 }
+
+func ParseJWT(tokenStr string) (*models.JwtClaims, error) {
+	jwtKey := os.Getenv("SECRET_KEY")
+	claims := &models.JwtClaims{}
+	token, err := jwt.ParseWithClaims(tokenStr, claims, func(token *jwt.Token) (interface{}, error) {
+		return []byte(jwtKey), nil
+	})
+	if err != nil {
+		return nil, err
+	} else {
+		claims, _ := token.Claims.(*models.JwtClaims)
+		return claims, nil
+	}
+}
+
+func IsJWTExpired(parseError error) bool {
+	validationError := parseError.(*jwt.ValidationError)
+	return validationError.Errors == jwt.ValidationErrorExpired
+}
