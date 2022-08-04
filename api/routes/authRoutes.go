@@ -10,8 +10,8 @@ import (
 func authenticationRouter(app fiber.Router, userService users.Service) {
 	authRoutes := app.Group("/auth")
 
-	hashPasswordMiddlewareRoutes := authRoutes.Use(middlewares.HashUserPassword())
-	hashPasswordMiddlewareRoutes.Post("/register", handlers.RegisterUser(userService))
-
 	authRoutes.Post("/login", handlers.UserLogin(userService))
+
+	authRoutes.Use(middlewares.HashUserPassword())
+	authRoutes.Post("/register", handlers.RegisterUser(userService))
 }
