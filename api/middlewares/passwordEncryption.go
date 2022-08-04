@@ -20,7 +20,7 @@ func HashUserPassword() fiber.Handler {
 		hashedPw, err := utils.HashPassword(user.Password)
 		if err != nil {
 			c.Status(http.StatusBadRequest)
-			return c.JSON(presenters.ErrorResponse(messages.USER_FAIL_TO_HASH_PASSWORD))
+			return c.JSON(presenters.ErrorResponse(messages.USER_FAIL_TO_HASH_PASSWORD_ERROR_MESSAGE))
 		}
 
 		user.Password = hashedPw
