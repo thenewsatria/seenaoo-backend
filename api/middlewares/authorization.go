@@ -1,7 +1,6 @@
 package middlewares
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -13,8 +12,7 @@ import (
 	"github.com/thenewsatria/seenaoo-backend/variables/messages"
 )
 
-func CheckAuthorize(service users.Service) fiber.Handler {
-	fmt.Println("masuk authorize check")
+func CheckAuthorized(service users.Service) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		bearerToken, exist := c.GetReqHeaders()["Authorization"]
 		if !exist {
@@ -30,7 +28,8 @@ func CheckAuthorize(service users.Service) fiber.Handler {
 		claims, err := utils.ParseAccessToken(tokenStr)
 		if err != nil {
 			if utils.IsTokenExpired(err) {
-				// refresh token logic here
+				//logic refresh token here
+
 				c.Status(http.StatusUnauthorized)
 				return c.JSON(presenters.ErrorResponse(messages.AUTH_TOKEN_EXPIRED_ERROR_MESSAGE))
 			}

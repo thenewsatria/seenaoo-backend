@@ -16,12 +16,23 @@ import (
 
 func RegisterUser(userService users.Service, refreshTokenService refreshtokens.Service) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		hashedUser := c.Locals("hashedUser").(*models.User)
+		user := &models.User{}
+		if err := c.BodyParser(user); err != nil {
+			c.Status(http.StatusBadRequest)
+			return c.JSON(presenters.ErrorResponse(messages.USER_BODY_PARSER_ERROR_MESSAGE))
+		}
+		hashedPw, err := utils.HashPassword(user.Password)
+		if err != nil {
+			c.Status(http.StatusBadRequest)
+			return c.JSON(presenters.ErrorResponse(messages.USER_FAIL_TO_HASH_PASSWORD_ERROR_MESSAGE))
+		}
+
+		user.Password = hashedPw
 		userEmail := &models.UserByEmailRequest{
-			Email: hashedUser.Email,
+			Email: user.Email,
 		}
 		userUsername := &models.UserByUsernameRequest{
-			Username: hashedUser.Username,
+			Username: user.Username,
 		}
 		if !userService.CheckEmailIsUnique(userEmail) {
 			c.Status(http.StatusBadRequest)
@@ -31,26 +42,26 @@ func RegisterUser(userService users.Service, refreshTokenService refreshtokens.S
 			c.Status(http.StatusBadRequest)
 			return c.JSON(presenters.ErrorResponse(messages.USER_USERNAME_ALREADY_USED_ERROR_MESSAGE))
 		}
-		accessTokenStr, err := utils.GenerateAccessToken(hashedUser)
+		accessTokenStr, err := utils.GenerateAccessToken(user)
 		if err != nil {
 			c.Status(http.StatusInternalServerError)
 			return c.JSON(presenters.ErrorResponse(messages.AUTH_FAIL_TO_GENERATE_ACCESS_TOKEN_ERROR_MESSAGE))
 		}
 
-		refreshTokenStr, err := utils.GenerateRefreshToken(hashedUser)
+		refreshTokenStr, err := utils.GenerateRefreshToken(user)
 		if err != nil {
 			c.Status(http.StatusInternalServerError)
 			return c.JSON(presenters.ErrorResponse(messages.AUTH_FAIL_TO_GENERATE_REFRESH_TOKEN_ERROR_MESSAGE))
 		}
 
-		_, err = userService.InsertUser(hashedUser)
+		_, err = userService.InsertUser(user)
 		if err != nil {
 			c.Status(http.StatusInternalServerError)
 			return c.JSON(presenters.ErrorResponse(messages.USER_FAIL_TO_INSERT_ERROR_MESSAGE))
 		}
 
 		refreshToken := &models.RefreshToken{
-			Username:     hashedUser.Username,
+			Username:     user.Username,
 			RefreshToken: refreshTokenStr,
 			UserAgent:    string(c.Context().UserAgent()),
 			ClientIP:     c.IP(),
@@ -117,7 +128,6 @@ func UserLogin(userService users.Service, refreshTokenService refreshtokens.Serv
 			return c.JSON(presenters.ErrorResponse(messages.AUTH_FAIL_TO_GENERATE_REFRESH_TOKEN_ERROR_MESSAGE))
 		}
 
-		//TODO: Add Update refreshToken based on user's username
 		loggedUserUsername := &models.RefreshTokenByUsersUsername{Username: loggedUser.Username}
 		userRefToken, err := refreshTokenService.FetchRefreshTokenByUsername(loggedUserUsername)
 		if err != nil {
@@ -142,5 +152,37 @@ func UserLogin(userService users.Service, refreshTokenService refreshtokens.Serv
 
 		c.Status(http.StatusOK)
 		return c.JSON(presenters.AuthenticationSuccessResponse(accessToken, updatedToken.RefreshToken))
+	}
+}
+
+func UserLogout(refreshTokenService refreshtokens.Service) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		currentUser := c.Locals("currentUser").(*models.User)
+		loggedOutUsername := &models.RefreshTokenByUsersUsername{
+			Username: currentUser.Username,
+		}
+		userRefToken, err := refreshTokenService.FetchRefreshTokenByUsername(loggedOutUsername)
+		if err != nil {
+			if err == mongo.ErrNoDocuments {
+				c.Status(http.StatusNotFound)
+				return c.JSON(presenters.ErrorResponse(messages.REFRESH_TOKEN_USERNAME_NOT_FOUND_ERROR_MESSAGE))
+			}
+			c.Status(http.StatusInternalServerError)
+			return c.JSON(presenters.ErrorResponse(messages.REFRESH_TOKEN_FAIL_TO_FETCH_ERROR_MESSAGE))
+		}
+
+		userRefToken.RefreshToken = "-"
+		userRefToken.IsBlocked = true
+		userRefToken.ClientIP = c.IP()
+		userRefToken.UserAgent = string(c.Context().UserAgent())
+
+		_, err = refreshTokenService.UpdateRefreshToken(userRefToken)
+		if err != nil {
+			c.Status(http.StatusInternalServerError)
+			return c.JSON(presenters.ErrorResponse(messages.REFRESH_TOKEN_FAIL_TO_FETCH_ERROR_MESSAGE))
+		}
+
+		c.Status(http.StatusOK)
+		return c.JSON(presenters.AuthenticationSuccessResponse("-", "-"))
 	}
 }
