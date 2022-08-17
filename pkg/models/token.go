@@ -20,3 +20,7 @@ type RefreshToken struct {
 type RefreshTokenByUsersUsername struct {
 	Username string `bson:"username"`
 }
+
+type RefreshAccessToken struct {
+	RefreshToken string `json:"refresh_token"`
+}

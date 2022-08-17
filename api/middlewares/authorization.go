@@ -28,10 +28,8 @@ func CheckAuthorized(service users.Service) fiber.Handler {
 		claims, err := utils.ParseAccessToken(tokenStr)
 		if err != nil {
 			if utils.IsTokenExpired(err) {
-				//logic refresh token here
-
 				c.Status(http.StatusUnauthorized)
-				return c.JSON(presenters.ErrorResponse(messages.AUTH_TOKEN_EXPIRED_ERROR_MESSAGE))
+				return c.JSON(presenters.ErrorResponse(messages.AUTH_ACCESS_TOKEN_EXPIRED_ERROR_MESSAGE))
 			}
 			c.Status(http.StatusUnauthorized)
 			return c.JSON(presenters.ErrorResponse(messages.AUTH_TOKEN_INVALID_ERROR_MESSAGE))

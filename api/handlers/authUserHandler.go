@@ -140,7 +140,6 @@ func UserLogin(userService users.Service, refreshTokenService refreshtokens.Serv
 		}
 
 		userRefToken.RefreshToken = refreshToken
-		userRefToken.IsBlocked = false
 		userRefToken.ClientIP = c.IP()
 		userRefToken.UserAgent = string(c.Context().UserAgent())
 
@@ -172,7 +171,6 @@ func UserLogout(refreshTokenService refreshtokens.Service) fiber.Handler {
 		}
 
 		userRefToken.RefreshToken = "-"
-		userRefToken.IsBlocked = true
 		userRefToken.ClientIP = c.IP()
 		userRefToken.UserAgent = string(c.Context().UserAgent())
 
@@ -184,5 +182,87 @@ func UserLogout(refreshTokenService refreshtokens.Service) fiber.Handler {
 
 		c.Status(http.StatusOK)
 		return c.JSON(presenters.AuthenticationSuccessResponse("-", "-"))
+	}
+}
+
+func RefreshToken(refreshTokenService refreshtokens.Service, userService users.Service) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		refreshRequest := &models.RefreshAccessToken{}
+		if err := c.BodyParser(refreshRequest); err != nil {
+			c.Status(http.StatusBadRequest)
+			return c.JSON(presenters.ErrorResponse(messages.REFRESH_ACCESS_TOKEN_BODY_PARSER_ERROR_MESSAGE))
+		}
+
+		claims, err := utils.ParseRefreshoken(refreshRequest.RefreshToken)
+		if err != nil {
+			if utils.IsTokenExpired(err) {
+				c.Status(http.StatusUnauthorized)
+				return c.JSON(presenters.ErrorResponse(messages.AUTH_REFRESH_TOKEN_EXPIRED_ERROR_MESSAGE))
+			}
+			c.Status(http.StatusUnauthorized)
+			return c.JSON(presenters.ErrorResponse(messages.AUTH_TOKEN_INVALID_ERROR_MESSAGE))
+		}
+		rtByUname := &models.RefreshTokenByUsersUsername{
+			Username: claims.Username,
+		}
+		refTok, err := refreshTokenService.FetchRefreshTokenByUsername(rtByUname)
+		if err != nil {
+			if err == mongo.ErrNoDocuments {
+				c.Status(http.StatusNotFound)
+				return c.JSON(presenters.ErrorResponse(messages.REFRESH_TOKEN_USERNAME_NOT_FOUND_ERROR_MESSAGE))
+			}
+			c.Status(http.StatusInternalServerError)
+			return c.JSON(presenters.ErrorResponse(messages.REFRESH_TOKEN_FAIL_TO_FETCH_ERROR_MESSAGE))
+		}
+
+		if refTok.IsBlocked {
+			c.Status(http.StatusUnauthorized)
+			return c.JSON(presenters.ErrorResponse(messages.AUTH_REFRESH_TOKEN_BLOCKED_ERROR_MESSAGE))
+		}
+
+		if refTok.RefreshToken == "-" {
+			c.Status(http.StatusUnauthorized)
+			return c.JSON(presenters.ErrorResponse(messages.AUTH_STORED_REFRESH_TOKEN_IS_EMPTY_ERROR_MESSAGE))
+		}
+
+		if refTok.RefreshToken != refreshRequest.RefreshToken {
+			c.Status(http.StatusUnauthorized)
+			return c.JSON(presenters.ErrorResponse(messages.AUTH_REFRESH_TOKEN_DIFFERENT_FROM_STORED_ERROR_MESSAGE))
+		}
+
+		userByUname := &models.UserByUsernameRequest{
+			Username: claims.Username,
+		}
+
+		userIssued, err := userService.FetchUSerByUsername(userByUname)
+		if err != nil {
+			c.Status(http.StatusNotFound)
+			return c.JSON(presenters.ErrorResponse(messages.USER_USERNAME_NOT_FOUND_ERROR_MESSAGE))
+		}
+
+		newAccessToken, err := utils.GenerateAccessToken(userIssued)
+		if err != nil {
+			c.Status(http.StatusInternalServerError)
+			return c.JSON(presenters.ErrorResponse(messages.AUTH_FAIL_TO_GENERATE_ACCESS_TOKEN_ERROR_MESSAGE))
+		}
+
+		newRefreshToken, err := utils.GenerateRefreshToken(userIssued)
+		if err != nil {
+			c.Status(http.StatusInternalServerError)
+			return c.JSON(presenters.ErrorResponse(messages.AUTH_FAIL_TO_GENERATE_REFRESH_TOKEN_ERROR_MESSAGE))
+		}
+
+		refTok.RefreshToken = newRefreshToken
+		refTok.ClientIP = c.IP()
+		refTok.UserAgent = string(c.Context().UserAgent())
+
+		updatedToken, err := refreshTokenService.UpdateRefreshToken(refTok)
+		if err != nil {
+			c.Status(http.StatusInternalServerError)
+			return c.JSON(presenters.ErrorResponse(messages.REFRESH_TOKEN_FAIL_TO_UPDATE_STORED_TOKEN_ERROR_MESSAGE))
+		}
+
+		c.Status(http.StatusOK)
+		return c.JSON(presenters.AuthenticationSuccessResponse(newAccessToken, updatedToken.RefreshToken))
 	}
 }
