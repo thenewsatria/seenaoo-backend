@@ -1,7 +1,6 @@
 package flashcards
 
 import (
-	"errors"
 	"time"
 
 	"github.com/thenewsatria/seenaoo-backend/database"
@@ -36,7 +35,7 @@ func (r *repository) ReadFlashcard(fId *models.ReadFlashcardRequest) (*models.Fl
 	flashcard := &models.Flashcard{}
 	id, err := primitive.ObjectIDFromHex(fId.ID)
 	if err != nil {
-		return nil, errors.New("Invalid flashcard id")
+		return nil, err
 	}
 	err = r.Collection.FindOne(database.GetDBContext(), bson.D{{Key: "_id", Value: id}}).Decode(flashcard)
 	if err != nil {

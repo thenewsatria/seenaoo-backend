@@ -12,8 +12,8 @@ import (
 
 type Repository interface {
 	CreateUser(u *models.User) (*models.User, error)
-	GetUserByEmail(uEmail *models.UserByEmailRequest) (*models.User, error)
-	GetUserByUsername(uUname *models.UserByUsernameRequest) (*models.User, error)
+	ReadUserByEmail(uEmail *models.UserByEmailRequest) (*models.User, error)
+	ReadUserByUsername(uUname *models.UserByUsernameRequest) (*models.User, error)
 }
 
 type repository struct {
@@ -34,7 +34,7 @@ func (r *repository) CreateUser(u *models.User) (*models.User, error) {
 	return u, nil
 }
 
-func (r *repository) GetUserByEmail(uEmail *models.UserByEmailRequest) (*models.User, error) {
+func (r *repository) ReadUserByEmail(uEmail *models.UserByEmailRequest) (*models.User, error) {
 	user := &models.User{}
 	err := r.Collection.FindOne(database.GetDBContext(), bson.D{{Key: "email", Value: uEmail.Email}}).Decode(user)
 	if err != nil {
@@ -44,7 +44,7 @@ func (r *repository) GetUserByEmail(uEmail *models.UserByEmailRequest) (*models.
 	return user, nil
 }
 
-func (r *repository) GetUserByUsername(uUname *models.UserByUsernameRequest) (*models.User, error) {
+func (r *repository) ReadUserByUsername(uUname *models.UserByUsernameRequest) (*models.User, error) {
 	user := &models.User{}
 	err := r.Collection.FindOne(database.GetDBContext(), bson.D{{Key: "username", Value: uUname.Username}}).Decode(user)
 	if err != nil {

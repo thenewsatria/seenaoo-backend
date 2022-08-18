@@ -6,47 +6,79 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/thenewsatria/seenaoo-backend/api/presenters"
 	"github.com/thenewsatria/seenaoo-backend/pkg/models"
+	"github.com/thenewsatria/seenaoo-backend/pkg/refreshtokens"
 	"github.com/thenewsatria/seenaoo-backend/pkg/users"
 	"github.com/thenewsatria/seenaoo-backend/utils"
 	"github.com/thenewsatria/seenaoo-backend/utils/validator"
 	"github.com/thenewsatria/seenaoo-backend/variables/messages"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func RegisterUser(service users.Service) fiber.Handler {
+func RegisterUser(userService users.Service, refreshTokenService refreshtokens.Service) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		hashedUser := c.Locals("hashedUser").(*models.User)
-		userEmail := &models.UserByEmailRequest{
-			Email: hashedUser.Email,
-		}
-		userUsername := &models.UserByUsernameRequest{
-			Username: hashedUser.Username,
-		}
-		if !service.CheckEmailIsUnique(userEmail) {
+		user := &models.User{}
+		if err := c.BodyParser(user); err != nil {
 			c.Status(http.StatusBadRequest)
-			return c.JSON(presenters.ErrorResponse(messages.USER_EMAIL_ALREADY_USED))
+			return c.JSON(presenters.ErrorResponse(messages.USER_BODY_PARSER_ERROR_MESSAGE))
 		}
-		if !service.CheckUsernameIsUnique(userUsername) {
-			c.Status(http.StatusBadRequest)
-			return c.JSON(presenters.ErrorResponse(messages.USER_USERNAME_ALREADY_USED))
-		}
-		token, err := utils.GenerateJWT(hashedUser)
+		hashedPw, err := utils.HashPassword(user.Password)
 		if err != nil {
-			c.Status(http.StatusInternalServerError)
-			return c.JSON(presenters.ErrorResponse(messages.AUTH_FAIL_TO_GENERATE_TOKEN))
+			c.Status(http.StatusBadRequest)
+			return c.JSON(presenters.ErrorResponse(messages.USER_FAIL_TO_HASH_PASSWORD_ERROR_MESSAGE))
 		}
 
-		_, err = service.InsertUser(hashedUser)
+		user.Password = hashedPw
+		userEmail := &models.UserByEmailRequest{
+			Email: user.Email,
+		}
+		userUsername := &models.UserByUsernameRequest{
+			Username: user.Username,
+		}
+		if !userService.CheckEmailIsUnique(userEmail) {
+			c.Status(http.StatusBadRequest)
+			return c.JSON(presenters.ErrorResponse(messages.USER_EMAIL_ALREADY_USED_ERROR_MESSAGE))
+		}
+		if !userService.CheckUsernameIsUnique(userUsername) {
+			c.Status(http.StatusBadRequest)
+			return c.JSON(presenters.ErrorResponse(messages.USER_USERNAME_ALREADY_USED_ERROR_MESSAGE))
+		}
+		accessTokenStr, err := utils.GenerateAccessToken(user)
+		if err != nil {
+			c.Status(http.StatusInternalServerError)
+			return c.JSON(presenters.ErrorResponse(messages.AUTH_FAIL_TO_GENERATE_ACCESS_TOKEN_ERROR_MESSAGE))
+		}
+
+		refreshTokenStr, err := utils.GenerateRefreshToken(user)
+		if err != nil {
+			c.Status(http.StatusInternalServerError)
+			return c.JSON(presenters.ErrorResponse(messages.AUTH_FAIL_TO_GENERATE_REFRESH_TOKEN_ERROR_MESSAGE))
+		}
+
+		_, err = userService.InsertUser(user)
 		if err != nil {
 			c.Status(http.StatusInternalServerError)
 			return c.JSON(presenters.ErrorResponse(messages.USER_FAIL_TO_INSERT_ERROR_MESSAGE))
 		}
 
+		refreshToken := &models.RefreshToken{
+			Username:     user.Username,
+			RefreshToken: refreshTokenStr,
+			UserAgent:    string(c.Context().UserAgent()),
+			ClientIP:     c.IP(),
+		}
+
+		_, err = refreshTokenService.InsertRefreshToken(refreshToken)
+		if err != nil {
+			c.Status(http.StatusInternalServerError)
+			return c.JSON(presenters.ErrorResponse(messages.REFRESH_TOKEN_FAIL_TO_INSERT_ERROR_MESSAGE))
+		}
+
 		c.Status(http.StatusCreated)
-		return c.JSON(presenters.AuthenticationSuccessResponse(token))
+		return c.JSON(presenters.AuthenticationSuccessResponse(accessTokenStr, refreshTokenStr))
 	}
 }
 
-func UserLogin(service users.Service) fiber.Handler {
+func UserLogin(userService users.Service, refreshTokenService refreshtokens.Service) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		userCredential := &models.Authentication{}
 		if err := c.BodyParser(userCredential); err != nil {
@@ -62,34 +94,175 @@ func UserLogin(service users.Service) fiber.Handler {
 				Username: userCredential.Credential,
 			}
 
-			loggedUser, err = service.FetchUSerByUsername(userUsername)
+			loggedUser, err = userService.FetchUSerByUsername(userUsername)
 			if err != nil {
 				c.Status(http.StatusForbidden)
-				return c.JSON(presenters.ErrorResponse(messages.AUTH_USERNAME_INCORRECT))
+				return c.JSON(presenters.ErrorResponse(messages.AUTH_USERNAME_INCORRECT_ERROR_MESSAGE))
 			}
 		} else {
 			userEmail := &models.UserByEmailRequest{
 				Email: userCredential.Credential,
 			}
-			loggedUser, err = service.FetchUserByEmail(userEmail)
+			loggedUser, err = userService.FetchUserByEmail(userEmail)
 			if err != nil {
 				c.Status(http.StatusForbidden)
-				return c.JSON(presenters.ErrorResponse(messages.AUTH_EMAIL_INCORRECT))
+				return c.JSON(presenters.ErrorResponse(messages.AUTH_EMAIL_INCORRECT_ERROR_MESSAGE))
 			}
 		}
 
 		checkPass := utils.CheckPasswordHash(userCredential.Password, loggedUser.Password)
 		if !checkPass {
 			c.Status(http.StatusForbidden)
-			return c.JSON(presenters.ErrorResponse(messages.AUTH_PASSWORD_INCORRECT))
+			return c.JSON(presenters.ErrorResponse(messages.AUTH_PASSWORD_INCORRECT_ERROR_MESSAGE))
 		}
 
-		token, err := utils.GenerateJWT(loggedUser)
+		accessToken, err := utils.GenerateAccessToken(loggedUser)
 		if err != nil {
 			c.Status(http.StatusInternalServerError)
-			return c.JSON(presenters.ErrorResponse(messages.AUTH_FAIL_TO_GENERATE_TOKEN))
+			return c.JSON(presenters.ErrorResponse(messages.AUTH_FAIL_TO_GENERATE_ACCESS_TOKEN_ERROR_MESSAGE))
 		}
+
+		refreshToken, err := utils.GenerateRefreshToken(loggedUser)
+		if err != nil {
+			c.Status(http.StatusInternalServerError)
+			return c.JSON(presenters.ErrorResponse(messages.AUTH_FAIL_TO_GENERATE_REFRESH_TOKEN_ERROR_MESSAGE))
+		}
+
+		loggedUserUsername := &models.RefreshTokenByUsersUsername{Username: loggedUser.Username}
+		userRefToken, err := refreshTokenService.FetchRefreshTokenByUsername(loggedUserUsername)
+		if err != nil {
+			if err == mongo.ErrNoDocuments {
+				c.Status(http.StatusNotFound)
+				return c.JSON(presenters.ErrorResponse(messages.REFRESH_TOKEN_USERNAME_NOT_FOUND_ERROR_MESSAGE))
+			}
+			c.Status(http.StatusInternalServerError)
+			return c.JSON(presenters.ErrorResponse(messages.REFRESH_TOKEN_FAIL_TO_FETCH_ERROR_MESSAGE))
+		}
+
+		userRefToken.RefreshToken = refreshToken
+		userRefToken.ClientIP = c.IP()
+		userRefToken.UserAgent = string(c.Context().UserAgent())
+
+		updatedToken, err := refreshTokenService.UpdateRefreshToken(userRefToken)
+		if err != nil {
+			c.Status(http.StatusInternalServerError)
+			return c.JSON(presenters.ErrorResponse(messages.REFRESH_TOKEN_FAIL_TO_FETCH_ERROR_MESSAGE))
+		}
+
 		c.Status(http.StatusOK)
-		return c.JSON(presenters.AuthenticationSuccessResponse(token))
+		return c.JSON(presenters.AuthenticationSuccessResponse(accessToken, updatedToken.RefreshToken))
+	}
+}
+
+func UserLogout(refreshTokenService refreshtokens.Service) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		currentUser := c.Locals("currentUser").(*models.User)
+		loggedOutUsername := &models.RefreshTokenByUsersUsername{
+			Username: currentUser.Username,
+		}
+		userRefToken, err := refreshTokenService.FetchRefreshTokenByUsername(loggedOutUsername)
+		if err != nil {
+			if err == mongo.ErrNoDocuments {
+				c.Status(http.StatusNotFound)
+				return c.JSON(presenters.ErrorResponse(messages.REFRESH_TOKEN_USERNAME_NOT_FOUND_ERROR_MESSAGE))
+			}
+			c.Status(http.StatusInternalServerError)
+			return c.JSON(presenters.ErrorResponse(messages.REFRESH_TOKEN_FAIL_TO_FETCH_ERROR_MESSAGE))
+		}
+
+		userRefToken.RefreshToken = "-"
+		userRefToken.ClientIP = c.IP()
+		userRefToken.UserAgent = string(c.Context().UserAgent())
+
+		_, err = refreshTokenService.UpdateRefreshToken(userRefToken)
+		if err != nil {
+			c.Status(http.StatusInternalServerError)
+			return c.JSON(presenters.ErrorResponse(messages.REFRESH_TOKEN_FAIL_TO_FETCH_ERROR_MESSAGE))
+		}
+
+		c.Status(http.StatusOK)
+		return c.JSON(presenters.AuthenticationSuccessResponse("-", "-"))
+	}
+}
+
+func RefreshToken(refreshTokenService refreshtokens.Service, userService users.Service) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		refreshRequest := &models.RefreshAccessToken{}
+		if err := c.BodyParser(refreshRequest); err != nil {
+			c.Status(http.StatusBadRequest)
+			return c.JSON(presenters.ErrorResponse(messages.REFRESH_ACCESS_TOKEN_BODY_PARSER_ERROR_MESSAGE))
+		}
+
+		claims, err := utils.ParseRefreshoken(refreshRequest.RefreshToken)
+		if err != nil {
+			if utils.IsTokenExpired(err) {
+				c.Status(http.StatusUnauthorized)
+				return c.JSON(presenters.ErrorResponse(messages.AUTH_REFRESH_TOKEN_EXPIRED_ERROR_MESSAGE))
+			}
+			c.Status(http.StatusUnauthorized)
+			return c.JSON(presenters.ErrorResponse(messages.AUTH_TOKEN_INVALID_ERROR_MESSAGE))
+		}
+		rtByUname := &models.RefreshTokenByUsersUsername{
+			Username: claims.Username,
+		}
+		refTok, err := refreshTokenService.FetchRefreshTokenByUsername(rtByUname)
+		if err != nil {
+			if err == mongo.ErrNoDocuments {
+				c.Status(http.StatusNotFound)
+				return c.JSON(presenters.ErrorResponse(messages.REFRESH_TOKEN_USERNAME_NOT_FOUND_ERROR_MESSAGE))
+			}
+			c.Status(http.StatusInternalServerError)
+			return c.JSON(presenters.ErrorResponse(messages.REFRESH_TOKEN_FAIL_TO_FETCH_ERROR_MESSAGE))
+		}
+
+		if refTok.IsBlocked {
+			c.Status(http.StatusUnauthorized)
+			return c.JSON(presenters.ErrorResponse(messages.AUTH_REFRESH_TOKEN_BLOCKED_ERROR_MESSAGE))
+		}
+
+		if refTok.RefreshToken == "-" {
+			c.Status(http.StatusUnauthorized)
+			return c.JSON(presenters.ErrorResponse(messages.AUTH_STORED_REFRESH_TOKEN_IS_EMPTY_ERROR_MESSAGE))
+		}
+
+		if refTok.RefreshToken != refreshRequest.RefreshToken {
+			c.Status(http.StatusUnauthorized)
+			return c.JSON(presenters.ErrorResponse(messages.AUTH_REFRESH_TOKEN_DIFFERENT_FROM_STORED_ERROR_MESSAGE))
+		}
+
+		userByUname := &models.UserByUsernameRequest{
+			Username: claims.Username,
+		}
+
+		userIssued, err := userService.FetchUSerByUsername(userByUname)
+		if err != nil {
+			c.Status(http.StatusNotFound)
+			return c.JSON(presenters.ErrorResponse(messages.USER_USERNAME_NOT_FOUND_ERROR_MESSAGE))
+		}
+
+		newAccessToken, err := utils.GenerateAccessToken(userIssued)
+		if err != nil {
+			c.Status(http.StatusInternalServerError)
+			return c.JSON(presenters.ErrorResponse(messages.AUTH_FAIL_TO_GENERATE_ACCESS_TOKEN_ERROR_MESSAGE))
+		}
+
+		newRefreshToken, err := utils.GenerateRefreshToken(userIssued)
+		if err != nil {
+			c.Status(http.StatusInternalServerError)
+			return c.JSON(presenters.ErrorResponse(messages.AUTH_FAIL_TO_GENERATE_REFRESH_TOKEN_ERROR_MESSAGE))
+		}
+
+		refTok.RefreshToken = newRefreshToken
+		refTok.ClientIP = c.IP()
+		refTok.UserAgent = string(c.Context().UserAgent())
+
+		updatedToken, err := refreshTokenService.UpdateRefreshToken(refTok)
+		if err != nil {
+			c.Status(http.StatusInternalServerError)
+			return c.JSON(presenters.ErrorResponse(messages.REFRESH_TOKEN_FAIL_TO_UPDATE_STORED_TOKEN_ERROR_MESSAGE))
+		}
+
+		c.Status(http.StatusOK)
+		return c.JSON(presenters.AuthenticationSuccessResponse(newAccessToken, updatedToken.RefreshToken))
 	}
 }

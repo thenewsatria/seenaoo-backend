@@ -3,12 +3,14 @@ package presenters
 import "github.com/gofiber/fiber/v2"
 
 type Authentication struct {
-	Token string `json:"token"`
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
 }
 
-func AuthenticationSuccessResponse(jwtToken string) *fiber.Map {
+func AuthenticationSuccessResponse(accessToken string, refreshToken string) *fiber.Map {
 	auth := &Authentication{
-		Token: jwtToken,
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
 	}
 	return &fiber.Map{
 		"status": true,

@@ -1,14 +1,11 @@
 package routes
 
 import (
-	"os"
-
 	"github.com/gofiber/fiber/v2"
-	"github.com/thenewsatria/seenaoo-backend/api/middlewares"
 	"github.com/thenewsatria/seenaoo-backend/database"
 	"github.com/thenewsatria/seenaoo-backend/pkg/flashcardhints"
 	"github.com/thenewsatria/seenaoo-backend/pkg/flashcards"
-	"github.com/thenewsatria/seenaoo-backend/pkg/models"
+	"github.com/thenewsatria/seenaoo-backend/pkg/refreshtokens"
 	"github.com/thenewsatria/seenaoo-backend/pkg/users"
 )
 
@@ -25,28 +22,14 @@ func Router(app *fiber.App) {
 	var userRepo = users.NewRepo(userCollection)
 	var userService = users.NewService(userRepo)
 
-	msg := os.Getenv("FIBER_ENV")
-
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.JSON(fiber.Map{
-			"status":  200,
-			"message": msg,
-		})
-	})
+	var refreshTokenCollection = database.UseDB().Collection(refreshtokens.CollectionName)
+	var refreshTokenRepo = refreshtokens.NewRepo(refreshTokenCollection)
+	var refreshTokenService = refreshtokens.NewService(refreshTokenRepo)
 
 	api := app.Group("/api")
 	apiV1 := api.Group("/v1")
 
 	flashcardRouter(apiV1, flashcardService, flashcardHintService)
 	flashcardHintRouter(apiV1, flashcardHintService)
-	authenticationRouter(apiV1, userService)
-
-	apiV1.Use(middlewares.CheckAuthorize(userService))
-	apiV1.Get("/test-protected", func(c *fiber.Ctx) error {
-		user := c.Locals("currentUser").(*models.User)
-		return c.JSON(fiber.Map{
-			"status":  true,
-			"message": user.Username + " " + user.Email,
-		})
-	})
+	authenticationRouter(apiV1, userService, refreshTokenService)
 }

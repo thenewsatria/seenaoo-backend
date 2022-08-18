@@ -19,17 +19,17 @@ func (s *service) InsertUser(user *models.User) (*models.User, error) {
 }
 
 func (s *service) CheckEmailIsUnique(userEmail *models.UserByEmailRequest) bool {
-	user, _ := s.repository.GetUserByEmail(userEmail)
+	user, _ := s.repository.ReadUserByEmail(userEmail)
 	return user == nil
 }
 
 func (s *service) CheckUsernameIsUnique(userUsername *models.UserByUsernameRequest) bool {
-	user, _ := s.repository.GetUserByUsername(userUsername)
+	user, _ := s.repository.ReadUserByUsername(userUsername)
 	return user == nil
 }
 
 func (s *service) FetchUserByEmail(userEmail *models.UserByEmailRequest) (*models.User, error) {
-	user, err := s.repository.GetUserByEmail(userEmail)
+	user, err := s.repository.ReadUserByEmail(userEmail)
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +38,7 @@ func (s *service) FetchUserByEmail(userEmail *models.UserByEmailRequest) (*model
 }
 
 func (s *service) FetchUSerByUsername(userUsername *models.UserByUsernameRequest) (*models.User, error) {
-	user, err := s.repository.GetUserByUsername(userUsername)
+	user, err := s.repository.ReadUserByUsername(userUsername)
 	if err != nil {
 		return nil, err
 	}
