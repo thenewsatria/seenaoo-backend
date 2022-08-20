@@ -18,10 +18,6 @@ type Flashcard struct {
 	UpdatedAt        time.Time          `bson:"updated_at" json:"updated_at"`
 }
 
-type DeleteFlashcardRequest struct {
-	ID string `json:"id"`
-}
-
-type ReadFlashcardRequest struct {
+type FlashcardByIdRequest struct {
 	ID string `json:"id"`
 }

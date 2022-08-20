@@ -17,7 +17,7 @@ type RefreshToken struct {
 	UpdatedAt    time.Time          `bson:"updated_at"`
 }
 
-type RefreshTokenByUsersUsername struct {
+type RefreshTokenByUsersUsernameRequest struct {
 	Username string `bson:"username"`
 }
 

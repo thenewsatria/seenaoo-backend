@@ -128,7 +128,7 @@ func UserLogin(userService users.Service, refreshTokenService refreshtokens.Serv
 			return c.JSON(presenters.ErrorResponse(messages.AUTH_FAIL_TO_GENERATE_REFRESH_TOKEN_ERROR_MESSAGE))
 		}
 
-		loggedUserUsername := &models.RefreshTokenByUsersUsername{Username: loggedUser.Username}
+		loggedUserUsername := &models.RefreshTokenByUsersUsernameRequest{Username: loggedUser.Username}
 		userRefToken, err := refreshTokenService.FetchRefreshTokenByUsername(loggedUserUsername)
 		if err != nil {
 			if err == mongo.ErrNoDocuments {
@@ -157,7 +157,7 @@ func UserLogin(userService users.Service, refreshTokenService refreshtokens.Serv
 func UserLogout(refreshTokenService refreshtokens.Service) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		currentUser := c.Locals("currentUser").(*models.User)
-		loggedOutUsername := &models.RefreshTokenByUsersUsername{
+		loggedOutUsername := &models.RefreshTokenByUsersUsernameRequest{
 			Username: currentUser.Username,
 		}
 		userRefToken, err := refreshTokenService.FetchRefreshTokenByUsername(loggedOutUsername)
@@ -202,7 +202,7 @@ func RefreshToken(refreshTokenService refreshtokens.Service, userService users.S
 			c.Status(http.StatusUnauthorized)
 			return c.JSON(presenters.ErrorResponse(messages.AUTH_TOKEN_INVALID_ERROR_MESSAGE))
 		}
-		rtByUname := &models.RefreshTokenByUsersUsername{
+		rtByUname := &models.RefreshTokenByUsersUsernameRequest{
 			Username: claims.Username,
 		}
 		refTok, err := refreshTokenService.FetchRefreshTokenByUsername(rtByUname)

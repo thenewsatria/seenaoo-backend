@@ -12,4 +12,6 @@ func flashcardRouter(app fiber.Router, flashcardService flashcards.Service, flas
 
 	flashcardRoutes.Get("/:flashcardId", handlers.GetFlashcard(flashcardService, flashcardHintService))
 	flashcardRoutes.Post("/", handlers.AddFlashcard(flashcardService))
+	flashcardRoutes.Put("/:flashcardId", handlers.UpdateFlashcard(flashcardService))
+	flashcardRoutes.Delete("/:flashcardId", handlers.DeleteFlashcard(flashcardService))
 }

@@ -12,7 +12,9 @@ import (
 
 type Repository interface {
 	CreateFlashcard(f *models.Flashcard) (*models.Flashcard, error)
-	ReadFlashcard(fId *models.ReadFlashcardRequest) (*models.Flashcard, error)
+	ReadFlashcard(fId *models.FlashcardByIdRequest) (*models.Flashcard, error)
+	UpdateFlashcard(f *models.Flashcard) (*models.Flashcard, error)
+	DeleteFlashcard(f *models.Flashcard) (*models.Flashcard, error)
 }
 
 type repository struct {
@@ -31,7 +33,7 @@ func (r *repository) CreateFlashcard(f *models.Flashcard) (*models.Flashcard, er
 	return f, nil
 }
 
-func (r *repository) ReadFlashcard(fId *models.ReadFlashcardRequest) (*models.Flashcard, error) {
+func (r *repository) ReadFlashcard(fId *models.FlashcardByIdRequest) (*models.Flashcard, error) {
 	flashcard := &models.Flashcard{}
 	id, err := primitive.ObjectIDFromHex(fId.ID)
 	if err != nil {
@@ -43,6 +45,23 @@ func (r *repository) ReadFlashcard(fId *models.ReadFlashcardRequest) (*models.Fl
 	}
 
 	return flashcard, nil
+}
+
+func (r *repository) UpdateFlashcard(f *models.Flashcard) (*models.Flashcard, error) {
+	f.UpdatedAt = time.Now()
+	_, err := r.Collection.UpdateOne(database.GetDBContext(), bson.M{"_id": f.ID}, bson.M{"$set": f})
+	if err != nil {
+		return nil, err
+	}
+	return f, nil
+}
+
+func (r *repository) DeleteFlashcard(f *models.Flashcard) (*models.Flashcard, error) {
+	_, err := r.Collection.DeleteOne(database.GetDBContext(), bson.M{"_id": f.ID})
+	if err != nil {
+		return nil, err
+	}
+	return f, nil
 }
 
 func NewRepo(collection *mongo.Collection) Repository {

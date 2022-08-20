@@ -4,7 +4,7 @@ import "github.com/thenewsatria/seenaoo-backend/pkg/models"
 
 type Service interface {
 	InsertFlashcardHint(flashcardHint *models.FlashcardHint) (*models.FlashcardHint, error)
-	PopulateFlashcard(flashcardId *models.ReadFlashcardRequest) (*[]models.FlashcardHint, error)
+	PopulateFlashcard(flashcardId *models.FlashcardByIdRequest) (*[]models.FlashcardHint, error)
 }
 
 type service struct {
@@ -16,7 +16,7 @@ func (s *service) InsertFlashcardHint(flashcardHint *models.FlashcardHint) (*mod
 	return s.repository.CreateFlashcardHint(flashcardHint)
 }
 
-func (s *service) PopulateFlashcard(flashcardId *models.ReadFlashcardRequest) (*[]models.FlashcardHint, error) {
+func (s *service) PopulateFlashcard(flashcardId *models.FlashcardByIdRequest) (*[]models.FlashcardHint, error) {
 	return s.repository.GetFlashcardHintsByFlashcardId(flashcardId)
 }
 
