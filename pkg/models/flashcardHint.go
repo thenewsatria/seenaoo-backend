@@ -14,6 +14,6 @@ type FlashcardHint struct {
 	UpdatedAt   time.Time          `bson:"updated_at" json:"updated_at"`
 }
 
-type ReadFlashcardHintRequest struct {
+type FlashcardHintByIdRequest struct {
 	ID string `json:"id"`
 }

@@ -4,7 +4,7 @@ import "github.com/thenewsatria/seenaoo-backend/pkg/models"
 
 type Service interface {
 	InsertRefreshToken(refreshToken *models.RefreshToken) (*models.RefreshToken, error)
-	FetchRefreshTokenByUsername(refreshTokenUsername *models.RefreshTokenByUsersUsername) (*models.RefreshToken, error)
+	FetchRefreshTokenByUsername(refreshTokenUsername *models.RefreshTokenByUsersUsernameRequest) (*models.RefreshToken, error)
 	UpdateRefreshToken(refreshToken *models.RefreshToken) (*models.RefreshToken, error)
 }
 
@@ -16,7 +16,7 @@ func (s *service) InsertRefreshToken(refreshToken *models.RefreshToken) (*models
 	return s.repository.CreateRefreshToken(refreshToken)
 }
 
-func (s *service) FetchRefreshTokenByUsername(refreshTokenUsername *models.RefreshTokenByUsersUsername) (*models.RefreshToken, error) {
+func (s *service) FetchRefreshTokenByUsername(refreshTokenUsername *models.RefreshTokenByUsersUsernameRequest) (*models.RefreshToken, error) {
 	return s.repository.ReadRefreshTokenByUsersUsername(refreshTokenUsername)
 }
 

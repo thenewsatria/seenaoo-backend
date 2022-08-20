@@ -21,7 +21,7 @@ type Flashcard struct {
 	Hints            []FlashcardHint    `json:"hints" bson:"hints"`
 }
 
-func FlashcardInsertSuccessResponse(f *models.Flashcard) *fiber.Map {
+func FlashcardSuccessResponse(f *models.Flashcard) *fiber.Map {
 	flashcard := &Flashcard{
 		ID:               f.ID,
 		FrontImagePath:   f.FrontImagePath,
@@ -41,7 +41,7 @@ func FlashcardInsertSuccessResponse(f *models.Flashcard) *fiber.Map {
 	}
 }
 
-func FlashcardReadSuccessResponse(f *models.Flashcard, hints *[]models.FlashcardHint) *fiber.Map {
+func FlashcardDetailSuccessResponse(f *models.Flashcard, hints *[]models.FlashcardHint) *fiber.Map {
 	flashcard := &Flashcard{
 		ID:               f.ID,
 		FrontImagePath:   f.FrontImagePath,

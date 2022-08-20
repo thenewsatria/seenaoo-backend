@@ -12,7 +12,7 @@ import (
 
 type Repository interface {
 	CreateRefreshToken(rt *models.RefreshToken) (*models.RefreshToken, error)
-	ReadRefreshTokenByUsersUsername(rtu *models.RefreshTokenByUsersUsername) (*models.RefreshToken, error)
+	ReadRefreshTokenByUsersUsername(rtu *models.RefreshTokenByUsersUsernameRequest) (*models.RefreshToken, error)
 	UpdateRefreshToken(rt *models.RefreshToken) (*models.RefreshToken, error)
 }
 
@@ -34,7 +34,7 @@ func (r *repository) CreateRefreshToken(rt *models.RefreshToken) (*models.Refres
 	return rt, nil
 }
 
-func (r *repository) ReadRefreshTokenByUsersUsername(rtu *models.RefreshTokenByUsersUsername) (*models.RefreshToken, error) {
+func (r *repository) ReadRefreshTokenByUsersUsername(rtu *models.RefreshTokenByUsersUsernameRequest) (*models.RefreshToken, error) {
 	refreshToken := &models.RefreshToken{}
 	err := r.Collection.FindOne(database.GetDBContext(), bson.D{{Key: "username", Value: rtu.Username}}).Decode(refreshToken)
 	if err != nil {

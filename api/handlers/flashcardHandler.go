@@ -26,13 +26,13 @@ func AddFlashcard(service flashcards.Service) fiber.Handler {
 		}
 
 		c.Status(http.StatusCreated)
-		return c.JSON(presenters.FlashcardInsertSuccessResponse(result))
+		return c.JSON(presenters.FlashcardSuccessResponse(result))
 	}
 }
 
 func GetFlashcard(flashcardService flashcards.Service, flashcardHintService flashcardhints.Service) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		flashcardId := &models.ReadFlashcardRequest{ID: c.Params("flashcardId")}
+		flashcardId := &models.FlashcardByIdRequest{ID: c.Params("flashcardId")}
 		result, err := flashcardService.FetchFlashcard(flashcardId)
 		if err != nil {
 			if err == mongo.ErrNoDocuments {
@@ -49,6 +49,61 @@ func GetFlashcard(flashcardService flashcards.Service, flashcardHintService flas
 			return c.JSON(presenters.ErrorResponse(messages.FLASHCARD_FAIL_TO_POPULATE_HINTS_ERROR_MESSAGE))
 		}
 		c.Status(http.StatusOK)
-		return c.JSON(presenters.FlashcardReadSuccessResponse(result, hints))
+		return c.JSON(presenters.FlashcardDetailSuccessResponse(result, hints))
+	}
+}
+
+func UpdateFlashcard(flashcardService flashcards.Service) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		flashcardId := &models.FlashcardByIdRequest{ID: c.Params("flashcardId")}
+		flashcard, err := flashcardService.FetchFlashcard(flashcardId)
+		if err != nil {
+			if err == mongo.ErrNoDocuments {
+				c.Status(http.StatusNotFound)
+				return c.JSON(presenters.ErrorResponse(messages.FLASHCARD_NOT_FOUND_ERROR_MESSAGE))
+			}
+			c.Status(http.StatusInternalServerError)
+			return c.JSON(presenters.ErrorResponse(messages.FLASHCARD_FAIL_TO_FETCH_ERROR_MESSAGE))
+		}
+
+		updateBody := &models.Flashcard{}
+		if err := c.BodyParser(updateBody); err != nil {
+			c.Status(http.StatusBadRequest)
+			return c.JSON(presenters.ErrorResponse(messages.FLASHCARD_BODY_PARSER_ERROR_MESSAGE))
+		}
+
+		updateBody.ID = flashcard.ID
+		updatedFlashcard, err := flashcardService.UpdateFlashcard(updateBody)
+		if err != nil {
+			c.Status(http.StatusInternalServerError)
+			return c.JSON(presenters.ErrorResponse(messages.FLASHCARD_FAIL_TO_UPDATE_ERROR_MESSAGE))
+		}
+
+		c.Status(http.StatusOK)
+		return c.JSON(presenters.FlashcardSuccessResponse(updatedFlashcard))
+	}
+}
+
+func DeleteFlashcard(flashcardService flashcards.Service) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		flashcardId := &models.FlashcardByIdRequest{ID: c.Params("flashcardId")}
+		flashcard, err := flashcardService.FetchFlashcard(flashcardId)
+		if err != nil {
+			if err == mongo.ErrNoDocuments {
+				c.Status(http.StatusNotFound)
+				return c.JSON(presenters.ErrorResponse(messages.FLASHCARD_NOT_FOUND_ERROR_MESSAGE))
+			}
+			c.Status(http.StatusInternalServerError)
+			return c.JSON(presenters.ErrorResponse(messages.FLASHCARD_FAIL_TO_FETCH_ERROR_MESSAGE))
+		}
+
+		deletedFlashcard, err := flashcardService.RemoveFlashcard(flashcard)
+		if err != nil {
+			c.Status(http.StatusInternalServerError)
+			return c.JSON(presenters.ErrorResponse(messages.FLASHCARD_FAIL_TO_DELETE_ERROR_MESSAGE))
+		}
+
+		c.Status(http.StatusOK)
+		return c.JSON(presenters.FlashcardSuccessResponse(deletedFlashcard))
 	}
 }
