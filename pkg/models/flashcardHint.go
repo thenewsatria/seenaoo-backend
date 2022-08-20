@@ -11,9 +11,9 @@ type FlashcardHint struct {
 	HintText    string             `bson:"hint_text" json:"hintText"`
 	FlashcardId primitive.ObjectID `bson:"flashcard_id" json:"flashcardId"`
 	CreatedAt   time.Time          `bson:"created_at" json:"createdAt"`
-	UpdatedAt   time.Time          `bson:"updated_at" json:"updated_at"`
+	UpdatedAt   time.Time          `bson:"updated_at" json:"updatedAt"`
 }
 
 type FlashcardHintByIdRequest struct {
-	ID string `json:"id"`
+	ID string `bson:"_id" json:"id"`
 }

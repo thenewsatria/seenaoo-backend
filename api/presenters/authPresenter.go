@@ -3,8 +3,8 @@ package presenters
 import "github.com/gofiber/fiber/v2"
 
 type Authentication struct {
-	AccessToken  string `json:"access_token"`
-	RefreshToken string `json:"refresh_token"`
+	AccessToken  string `json:"accessToken"`
+	RefreshToken string `json:"refreshToken"`
 }
 
 func AuthenticationSuccessResponse(accessToken string, refreshToken string) *fiber.Map {

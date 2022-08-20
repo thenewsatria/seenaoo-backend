@@ -7,20 +7,20 @@ import (
 )
 
 type RefreshToken struct {
-	ID           primitive.ObjectID `bson:"_id"`
-	Username     string             `bson:"username"`
-	RefreshToken string             `bson:"refresh_token"`
-	UserAgent    string             `bson:"user_agent"`
-	ClientIP     string             `bson:"client_ip"`
-	IsBlocked    bool               `bson:"is_blocked"`
-	CreatedAt    time.Time          `bson:"created_at"`
-	UpdatedAt    time.Time          `bson:"updated_at"`
+	ID           primitive.ObjectID `bson:"_id" json:"id"`
+	Username     string             `bson:"username" json:"username"`
+	RefreshToken string             `bson:"refresh_token" json:"refreshToken"`
+	UserAgent    string             `bson:"user_agent" json:"userAgent"`
+	ClientIP     string             `bson:"client_ip" json:"clientIP"`
+	IsBlocked    bool               `bson:"is_blocked" json:"isBlocked"`
+	CreatedAt    time.Time          `bson:"created_at" json:"createdAt"`
+	UpdatedAt    time.Time          `bson:"updated_at" json:"updatedAt"`
 }
 
 type RefreshTokenByUsersUsernameRequest struct {
-	Username string `bson:"username"`
+	Username string `bson:"username" json:"username"`
 }
 
 type RefreshAccessToken struct {
-	RefreshToken string `json:"refresh_token"`
+	RefreshToken string `bson:"refresh_token" json:"refreshToken"`
 }

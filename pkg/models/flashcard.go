@@ -19,5 +19,5 @@ type Flashcard struct {
 }
 
 type FlashcardByIdRequest struct {
-	ID string `json:"id"`
+	ID string `bson:"_id" json:"id"`
 }

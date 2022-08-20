@@ -6,10 +6,15 @@ var FLASHCARD_FAIL_TO_INSERT_ERROR_MESSAGE = "Failed to insert flashcard to data
 var FLASHCARD_FAIL_TO_FETCH_ERROR_MESSAGE = "Failed to fetch flashcard from database"
 var FLASHCARD_FAIL_TO_POPULATE_HINTS_ERROR_MESSAGE = "Failed to populate flashcard's hints"
 var FLASHCARD_FAIL_TO_UPDATE_ERROR_MESSAGE = "Failed to update flashcard"
-var FLASHCARD_FAIL_TO_DELETE_ERROR_MESSAGE = "Failed to update flashcard"
+var FLASHCARD_FAIL_TO_DELETE_ERROR_MESSAGE = "Failed to delete flashcard"
+var FLASHCARD_HAS_EMPTY_HINTS_ERROR_MESSAGE = "Flashcard has empty hints"
 
+var FLASHCARD_HINT_NOT_FOUND_ERROR_MESSAGE = "Flashcard hint with provided id is not found"
 var FLASHCARD_HINT_BODY_PARSER_ERROR_MESSAGE = "Error parsing hint body request"
-var FLASHCARD_HINT_FAIL_TO_INSERT_ERROR_MESSAGE = "Error parsing hint body request"
+var FLASHCARD_HINT_FAIL_TO_INSERT_ERROR_MESSAGE = "Failed to insert flashcard hint to database"
+var FLASHCARD_HINT_FAIL_TO_FETCH_ERROR_MESSAGE = "Failed to fetch flashcard hint from database"
+var FLASHCARD_HINT_FAIL_TO_UPDATE_ERROR_MESSAGE = "Failed to update flashcard hint"
+var FLASHCARD_HINT_FAIL_TO_DELETE_ERROR_MESSAGE = "Failed to delete flashcard hint"
 
 var USER_BODY_PARSER_ERROR_MESSAGE = "Error parsing user body request"
 var USER_FAIL_TO_HASH_PASSWORD_ERROR_MESSAGE = "Error hashing user password"
