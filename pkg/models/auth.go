@@ -1,6 +1,6 @@
 package models
 
 type Authentication struct {
-	Credential string `json:"credential"`
-	Password   string `json:"password"`
+	Credential string `bson:"credential" json:"credential"`
+	Password   string `bson:"password" json:"password"`
 }

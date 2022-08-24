@@ -7,11 +7,11 @@ import (
 )
 
 type FlashcardHint struct {
-	ID       primitive.ObjectID `json:"id" bson:"_id"`
-	HintText string             `json:"hintText" bson:"hint_text"`
+	ID       primitive.ObjectID `json:"id"`
+	HintText string             `json:"hintText"`
 }
 
-func FlashcardHintInsertSuccessResponse(fh *models.FlashcardHint) *fiber.Map {
+func FlashcardHintSuccessResponse(fh *models.FlashcardHint) *fiber.Map {
 	flashcardHint := FlashcardHint{
 		ID:       fh.ID,
 		HintText: fh.HintText,

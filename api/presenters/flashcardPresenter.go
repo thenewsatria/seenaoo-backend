@@ -16,8 +16,20 @@ type Flashcard struct {
 	BackText         string             `bson:"back_text" json:"backText"`
 	Question         string             `bson:"question" json:"question"`
 	FlashCardCoverId primitive.ObjectID `bson:"flashcard_cover_id" json:"flashcardCoverId"`
-	CreatedAt        time.Time          `bson:"created_at" json:"created_at"`
-	UpdatedAt        time.Time          `bson:"updated_at" json:"updated_at"`
+	CreatedAt        time.Time          `bson:"created_at" json:"createdAt"`
+	UpdatedAt        time.Time          `bson:"updated_at" json:"updatedAt"`
+}
+
+type FlashcardDetail struct {
+	ID               primitive.ObjectID `json:"id" bson:"_id"`
+	FrontImagePath   string             `bson:"front_image_path" json:"frontImagePath"`
+	BackImagePath    string             `bson:"back_image_path" json:"backImagePath"`
+	FrontText        string             `bson:"front_text" json:"frontText"`
+	BackText         string             `bson:"back_text" json:"backText"`
+	Question         string             `bson:"question" json:"question"`
+	FlashCardCoverId primitive.ObjectID `bson:"flashcard_cover_id" json:"flashcardCoverId"`
+	CreatedAt        time.Time          `bson:"created_at" json:"createdAt"`
+	UpdatedAt        time.Time          `bson:"updated_at" json:"updatedAt"`
 	Hints            []FlashcardHint    `json:"hints" bson:"hints"`
 }
 
@@ -32,7 +44,6 @@ func FlashcardSuccessResponse(f *models.Flashcard) *fiber.Map {
 		FlashCardCoverId: f.FlashCardCoverId,
 		CreatedAt:        f.CreatedAt,
 		UpdatedAt:        f.UpdatedAt,
-		Hints:            []FlashcardHint{},
 	}
 	return &fiber.Map{
 		"status": true,
@@ -42,7 +53,7 @@ func FlashcardSuccessResponse(f *models.Flashcard) *fiber.Map {
 }
 
 func FlashcardDetailSuccessResponse(f *models.Flashcard, hints *[]models.FlashcardHint) *fiber.Map {
-	flashcard := &Flashcard{
+	flashcard := &FlashcardDetail{
 		ID:               f.ID,
 		FrontImagePath:   f.FrontImagePath,
 		BackImagePath:    f.BackImagePath,
