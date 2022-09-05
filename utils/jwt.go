@@ -36,7 +36,7 @@ func GenerateAccessToken(user *models.User) (string, error) {
 
 func GenerateRefreshToken(user *models.User) (string, error) {
 	jwtKey := os.Getenv("REFRESH_TOKEN_SECRET_KEY")
-	jwtExp := os.Getenv("ACCESS_TOKEN_EXP_TIME")
+	jwtExp := os.Getenv("REFRESH_TOKEN_EXP_TIME")
 	expTime, _ := strconv.Atoi(jwtExp)
 
 	claims := &models.JwtClaims{
