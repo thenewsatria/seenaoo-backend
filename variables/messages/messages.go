@@ -56,3 +56,5 @@ var COLLABORATION_FAIL_TO_DELETE_ERROR_MESSAGE = "Failed to fetch collaboration"
 
 var FLASHCARD_COVER_NOT_FOUND_ERROR_MESSAGE = "Flashcard cover with provided id is not found"
 var FLASHCARD_COVER_FAIL_TO_FETCH_ERROR_MESSAGE = "Failed to fetch flashcard from database"
+var FLASHCARD_COVER_BODY_PARSER_ERROR_MESSAGE = "Error parsing flashcard cover body request"
+var FLASHCARD_COVER_FAIL_TO_INSERT_ERROR_MESSAGE = "Failed to insert flashcard from database"

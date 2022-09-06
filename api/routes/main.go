@@ -39,8 +39,8 @@ func Router(app *fiber.App) {
 	api := app.Group("/api")
 	apiV1 := api.Group("/v1")
 
-	flashcardRouter(apiV1, flashcardService, flashcardHintService)
-	flashcardHintRouter(apiV1, flashcardHintService, flashcardService)
+	flashcardRouter(apiV1, flashcardService, flashcardHintService, userService)
+	flashcardHintRouter(apiV1, flashcardHintService, flashcardService, userService)
 	authenticationRouter(apiV1, userService, refreshTokenService)
 	collaborationRouter(apiV1, collaborationService, userService, flashcardCoverService)
 }
