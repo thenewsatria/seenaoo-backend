@@ -22,6 +22,7 @@ var USER_FAIL_TO_INSERT_ERROR_MESSAGE = "Failed to insert user to database"
 var USER_EMAIL_ALREADY_USED_ERROR_MESSAGE = "Email already used"
 var USER_USERNAME_ALREADY_USED_ERROR_MESSAGE = "Username already used"
 var USER_USERNAME_NOT_FOUND_ERROR_MESSAGE = "user with speficied username is not found"
+var USER_FAIL_TO_FETCH_ERROR_MESSAGE = "Failed to fetch user hint from database"
 
 var AUTH_FAIL_TO_GENERATE_ACCESS_TOKEN_ERROR_MESSAGE = "Failed to generate access token"
 var AUTH_FAIL_TO_GENERATE_REFRESH_TOKEN_ERROR_MESSAGE = "Failed to generate refresh token"
@@ -48,3 +49,10 @@ var COLLABORATION_FAIL_TO_INSERT_ERROR_MESSAGE = "Failed to insert collaboration
 var COLLABORATION_NOT_FOUND_ERROR_MESSAGE = "Collaboration with provided id is not found"
 var COLLABORATION_INVITER_DOESNT_EXIST_ERROR_MESSAGE = "Can't send collaboration invite, inviter doesn't exist"
 var COLLABORATION_COLLABORATOR_DOESNT_EXIST_ERROR_MESSAGE = "Can't send collaboration invite, collaborator doesn't exist"
+var COLLABORATION_ITEM_TYPE_IS_UNKNOWN = "Collaboration item type is unknown"
+var COLLABORATION_FAIL_TO_UPDATE_ERROR_MESSAGE = "Failed to update collaboration"
+var COLLABORATION_FAIL_TO_FETCH_ERROR_MESSAGE = "Failed to fetch collaboration"
+var COLLABORATION_FAIL_TO_DELETE_ERROR_MESSAGE = "Failed to fetch collaboration"
+
+var FLASHCARD_COVER_NOT_FOUND_ERROR_MESSAGE = "Flashcard cover with provided id is not found"
+var FLASHCARD_COVER_FAIL_TO_FETCH_ERROR_MESSAGE = "Failed to fetch flashcard from database"

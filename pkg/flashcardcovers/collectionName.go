@@ -1,3 +1,3 @@
 package flashcardcovers
 
-var collectionName = "flashcardCovers"
+var CollectionName = "flashcardCovers"
