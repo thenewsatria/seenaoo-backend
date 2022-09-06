@@ -4,10 +4,10 @@ import "github.com/thenewsatria/seenaoo-backend/pkg/models"
 
 type Service interface {
 	InsertUser(user *models.User) (*models.User, error)
-	CheckEmailIsUnique(userEmail *models.UserByEmailRequest) bool
-	CheckUsernameIsUnique(userUsername *models.UserByUsernameRequest) bool
+	CheckEmailIsExist(userEmail *models.UserByEmailRequest) bool
+	CheckUsernameIsExist(userUsername *models.UserByUsernameRequest) bool
 	FetchUserByEmail(userEmail *models.UserByEmailRequest) (*models.User, error)
-	FetchUSerByUsername(userName *models.UserByUsernameRequest) (*models.User, error)
+	FetchUserByUsername(userName *models.UserByUsernameRequest) (*models.User, error)
 }
 
 type service struct {
@@ -18,14 +18,14 @@ func (s *service) InsertUser(user *models.User) (*models.User, error) {
 	return s.repository.CreateUser(user)
 }
 
-func (s *service) CheckEmailIsUnique(userEmail *models.UserByEmailRequest) bool {
+func (s *service) CheckEmailIsExist(userEmail *models.UserByEmailRequest) bool {
 	user, _ := s.repository.ReadUserByEmail(userEmail)
-	return user == nil
+	return user != nil
 }
 
-func (s *service) CheckUsernameIsUnique(userUsername *models.UserByUsernameRequest) bool {
+func (s *service) CheckUsernameIsExist(userUsername *models.UserByUsernameRequest) bool {
 	user, _ := s.repository.ReadUserByUsername(userUsername)
-	return user == nil
+	return user != nil
 }
 
 func (s *service) FetchUserByEmail(userEmail *models.UserByEmailRequest) (*models.User, error) {
@@ -37,7 +37,7 @@ func (s *service) FetchUserByEmail(userEmail *models.UserByEmailRequest) (*model
 	return user, nil
 }
 
-func (s *service) FetchUSerByUsername(userUsername *models.UserByUsernameRequest) (*models.User, error) {
+func (s *service) FetchUserByUsername(userUsername *models.UserByUsernameRequest) (*models.User, error) {
 	user, err := s.repository.ReadUserByUsername(userUsername)
 	if err != nil {
 		return nil, err

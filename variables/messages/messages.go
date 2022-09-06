@@ -42,3 +42,9 @@ var REFRESH_TOKEN_FAIL_TO_INSERT_ERROR_MESSAGE = "Failed to insert refresh token
 var REFRESH_TOKEN_USERNAME_NOT_FOUND_ERROR_MESSAGE = "Refresh token with specified username is not found"
 var REFRESH_TOKEN_FAIL_TO_FETCH_ERROR_MESSAGE = "Failed to fetch refresh token from database"
 var REFRESH_TOKEN_FAIL_TO_UPDATE_STORED_TOKEN_ERROR_MESSAGE = "Failed to update stored refresh token"
+
+var COLLABORATION_BODY_PARSER_ERROR_MESSAGE = "Error parsing collaboration body request"
+var COLLABORATION_FAIL_TO_INSERT_ERROR_MESSAGE = "Failed to insert collaboration to database"
+var COLLABORATION_NOT_FOUND_ERROR_MESSAGE = "Collaboration with provided id is not found"
+var COLLABORATION_INVITER_DOESNT_EXIST_ERROR_MESSAGE = "Can't send collaboration invite, inviter doesn't exist"
+var COLLABORATION_COLLABORATOR_DOESNT_EXIST_ERROR_MESSAGE = "Can't send collaboration invite, collaborator doesn't exist"

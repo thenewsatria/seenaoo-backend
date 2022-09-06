@@ -34,11 +34,11 @@ func RegisterUser(userService users.Service, refreshTokenService refreshtokens.S
 		userUsername := &models.UserByUsernameRequest{
 			Username: user.Username,
 		}
-		if !userService.CheckEmailIsUnique(userEmail) {
+		if userService.CheckEmailIsExist(userEmail) {
 			c.Status(http.StatusBadRequest)
 			return c.JSON(presenters.ErrorResponse(messages.USER_EMAIL_ALREADY_USED_ERROR_MESSAGE))
 		}
-		if !userService.CheckUsernameIsUnique(userUsername) {
+		if userService.CheckUsernameIsExist(userUsername) {
 			c.Status(http.StatusBadRequest)
 			return c.JSON(presenters.ErrorResponse(messages.USER_USERNAME_ALREADY_USED_ERROR_MESSAGE))
 		}
@@ -94,7 +94,7 @@ func UserLogin(userService users.Service, refreshTokenService refreshtokens.Serv
 				Username: userCredential.Credential,
 			}
 
-			loggedUser, err = userService.FetchUSerByUsername(userUsername)
+			loggedUser, err = userService.FetchUserByUsername(userUsername)
 			if err != nil {
 				c.Status(http.StatusForbidden)
 				return c.JSON(presenters.ErrorResponse(messages.AUTH_USERNAME_INCORRECT_ERROR_MESSAGE))
@@ -234,7 +234,7 @@ func RefreshToken(refreshTokenService refreshtokens.Service, userService users.S
 			Username: claims.Username,
 		}
 
-		userIssued, err := userService.FetchUSerByUsername(userByUname)
+		userIssued, err := userService.FetchUserByUsername(userByUname)
 		if err != nil {
 			c.Status(http.StatusNotFound)
 			return c.JSON(presenters.ErrorResponse(messages.USER_USERNAME_NOT_FOUND_ERROR_MESSAGE))

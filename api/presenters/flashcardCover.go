@@ -1,4 +1,4 @@
-package models
+package presenters
 
 import (
 	"time"
@@ -16,12 +16,4 @@ type FlashcardCover struct {
 	Author      primitive.ObjectID   `bson:"user_id" json:"userId"`
 	CreatedAt   time.Time            `bson:"created_at" json:"createdAt"`
 	UpdatedAt   time.Time            `bson:"updated_at" json:"updatedAt"`
-}
-
-type FlashcardCoverBySlug struct {
-	Slug string `bson:"slug" json:"slug"`
-}
-
-type FlashcardCoverById struct {
-	ID string `bson:"_id" json:"id"`
 }

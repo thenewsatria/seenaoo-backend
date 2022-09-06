@@ -38,7 +38,7 @@ func CheckAuthorized(service users.Service) fiber.Handler {
 		userUsername := &models.UserByUsernameRequest{
 			Username: claims.Username,
 		}
-		currentUser, err := service.FetchUSerByUsername(userUsername)
+		currentUser, err := service.FetchUserByUsername(userUsername)
 		if err != nil {
 			c.Status(http.StatusNotFound)
 			c.JSON(presenters.ErrorResponse(messages.USER_USERNAME_NOT_FOUND_ERROR_MESSAGE))

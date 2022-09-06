@@ -26,3 +26,7 @@ type UserByEmailRequest struct {
 type UserByUsernameRequest struct {
 	Username string `bson:"username" json:"username"`
 }
+
+type UserByIdRequest struct {
+	ID string `bson:"_id" json:"id"`
+}
