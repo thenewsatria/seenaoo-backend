@@ -58,6 +58,8 @@ var FLASHCARD_COVER_NOT_FOUND_ERROR_MESSAGE = "Flashcard cover with provided id 
 var FLASHCARD_COVER_FAIL_TO_FETCH_ERROR_MESSAGE = "Failed to fetch flashcard from database"
 var FLASHCARD_COVER_BODY_PARSER_ERROR_MESSAGE = "Error parsing flashcard cover body request"
 var FLASHCARD_COVER_FAIL_TO_INSERT_ERROR_MESSAGE = "Failed to insert flashcard from database"
+var FLASHCARD_COVER_FAIL_TO_POPULATE_FLASHCARDS_ERROR_MESSAGE = "Failed to populate flashcard covers's hints"
 
 var TAG_FAIL_TO_FETCH_ERROR_MESSAGE = "Failed to fetch tag from database"
 var TAG_FAIL_TO_INSERT_ERROR_MESSAGE = "Failed to insert tag from database"
+var TAG_NOT_FOUND_ERROR_MESSAGE = "Tag with provided id is not found"

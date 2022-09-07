@@ -13,6 +13,7 @@ import (
 type Repository interface {
 	CreateFlashcard(f *models.Flashcard) (*models.Flashcard, error)
 	ReadFlashcard(fId *models.FlashcardByIdRequest) (*models.Flashcard, error)
+	ReadFlashcardsByFlashcardCoverId(fFCoverId *models.FlashcardCoverById) (*[]models.Flashcard, error)
 	UpdateFlashcard(f *models.Flashcard) (*models.Flashcard, error)
 	DeleteFlashcard(f *models.Flashcard) (*models.Flashcard, error)
 }
@@ -62,6 +63,29 @@ func (r *repository) DeleteFlashcard(f *models.Flashcard) (*models.Flashcard, er
 		return nil, err
 	}
 	return f, nil
+}
+
+func (r *repository) ReadFlashcardsByFlashcardCoverId(fFCoverId *models.FlashcardCoverById) (*[]models.Flashcard, error) {
+	flashcards := []models.Flashcard{}
+	flashCvrId, err := primitive.ObjectIDFromHex(fFCoverId.ID)
+	if err != nil {
+		return nil, err
+	}
+	cursor, err := r.Collection.Find(database.GetDBContext(), bson.D{{Key: "flashcard_cover_id", Value: flashCvrId}})
+	if err != nil {
+		return nil, err
+	}
+
+	for cursor.Next(database.GetDBContext()) {
+		var flashcard = models.Flashcard{}
+		err := cursor.Decode(&flashcard)
+		if err != nil {
+			return nil, err
+		}
+		flashcards = append(flashcards, flashcard)
+	}
+
+	return &flashcards, nil
 }
 
 func NewRepo(collection *mongo.Collection) Repository {

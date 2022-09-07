@@ -9,8 +9,10 @@ import (
 	"github.com/gosimple/slug"
 	"github.com/thenewsatria/seenaoo-backend/api/presenters"
 	"github.com/thenewsatria/seenaoo-backend/pkg/flashcardcovers"
+	"github.com/thenewsatria/seenaoo-backend/pkg/flashcards"
 	"github.com/thenewsatria/seenaoo-backend/pkg/models"
 	"github.com/thenewsatria/seenaoo-backend/pkg/tags"
+	"github.com/thenewsatria/seenaoo-backend/pkg/users"
 	"github.com/thenewsatria/seenaoo-backend/variables/messages"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -56,7 +58,7 @@ func AddFlashcardCover(flashcardCoverService flashcardcovers.Service, tagService
 			Description: fcCoverRequest.Description,
 			Image_path:  fcCoverRequest.Image_path,
 			Tags:        tagIds,
-			Author:      currentUser.ID,
+			Author:      currentUser.Username,
 		}
 
 		_, err = flashcardCoverService.InsertFlashcardCover(fcCover)
@@ -66,5 +68,57 @@ func AddFlashcardCover(flashcardCoverService flashcardcovers.Service, tagService
 		}
 
 		return c.JSON(presenters.FlashcardCoverSuccessResponse(fcCover))
+	}
+}
+
+func GetFlashcardCover(flashcardCoverService flashcardcovers.Service, tagService tags.Service, userService users.Service, flashcardService flashcards.Service) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		fcCoverId := &models.FlashcardCoverBySlug{Slug: c.Params("flashcardCoverSlug")}
+		fcCover, err := flashcardCoverService.FetchFlashcardCoverBySlug(fcCoverId)
+		if err != nil {
+			if err == mongo.ErrNoDocuments {
+				c.Status(http.StatusNotFound)
+				return c.JSON(presenters.ErrorResponse(messages.FLASHCARD_COVER_NOT_FOUND_ERROR_MESSAGE))
+			}
+			c.Status(http.StatusInternalServerError)
+			return c.JSON(presenters.ErrorResponse(messages.FLASHCARD_COVER_FAIL_TO_FETCH_ERROR_MESSAGE))
+		}
+
+		tagDetails := []models.Tag{}
+
+		for _, fcTag := range fcCover.Tags {
+			tagId := &models.TagById{ID: fcTag.Hex()}
+			tag, err := tagService.FetchTagById(tagId)
+			if err != nil {
+				if err == mongo.ErrNoDocuments {
+					c.Status(http.StatusNotFound)
+					return c.JSON(presenters.ErrorResponse(messages.TAG_NOT_FOUND_ERROR_MESSAGE))
+				}
+				c.Status(http.StatusInternalServerError)
+				return c.JSON(presenters.ErrorResponse(messages.TAG_FAIL_TO_FETCH_ERROR_MESSAGE))
+			}
+			tagDetails = append(tagDetails, *tag)
+		}
+
+		userUname := &models.UserByUsernameRequest{Username: fcCover.Author}
+		author, err := userService.FetchUserByUsername(userUname)
+		if err != nil {
+			if err == mongo.ErrNoDocuments {
+				c.Status(http.StatusNotFound)
+				return c.JSON(presenters.ErrorResponse(messages.USER_USERNAME_NOT_FOUND_ERROR_MESSAGE))
+			}
+			c.Status(http.StatusInternalServerError)
+			return c.JSON(presenters.ErrorResponse(messages.USER_FAIL_TO_FETCH_ERROR_MESSAGE))
+		}
+
+		fcCvrId := &models.FlashcardCoverById{ID: fcCover.ID.Hex()}
+		flashcards, err := flashcardService.PopulateFlashcardCover(fcCvrId)
+		if err != nil {
+			c.Status(http.StatusInternalServerError)
+			return c.JSON(presenters.ErrorResponse(messages.FLASHCARD_COVER_FAIL_TO_POPULATE_FLASHCARDS_ERROR_MESSAGE))
+		}
+
+		c.Status(http.StatusOK)
+		return c.JSON(presenters.FlashcardCoverDetailSuccessResponse(fcCover, &tagDetails, flashcards, author))
 	}
 }
