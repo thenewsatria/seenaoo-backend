@@ -8,6 +8,7 @@ type Service interface {
 	UpdateFlashcard(f *models.Flashcard) (*models.Flashcard, error)
 	RemoveFlashcard(flashcard *models.Flashcard) (*models.Flashcard, error)
 	PopulateFlashcardCover(flashcardCoverId *models.FlashcardCoverById) (*[]models.Flashcard, error)
+	RemoveFlashcardsByFlashcardCoverId(flashcardCoverId *models.FlashcardCoverById) (int64, error)
 }
 
 type service struct {
@@ -33,6 +34,10 @@ func (s *service) RemoveFlashcard(flashcard *models.Flashcard) (*models.Flashcar
 
 func (s *service) PopulateFlashcardCover(flashcardCoverId *models.FlashcardCoverById) (*[]models.Flashcard, error) {
 	return s.repository.ReadFlashcardsByFlashcardCoverId(flashcardCoverId)
+}
+
+func (s *service) RemoveFlashcardsByFlashcardCoverId(flashcardCoverId *models.FlashcardCoverById) (int64, error) {
+	return s.repository.DeleteFlashcardsByFlashcardCoverId(flashcardCoverId)
 }
 
 func NewService(r Repository) Service {

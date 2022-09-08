@@ -16,6 +16,7 @@ type Repository interface {
 	ReadFlashcardsByFlashcardCoverId(fFCoverId *models.FlashcardCoverById) (*[]models.Flashcard, error)
 	UpdateFlashcard(f *models.Flashcard) (*models.Flashcard, error)
 	DeleteFlashcard(f *models.Flashcard) (*models.Flashcard, error)
+	DeleteFlashcardsByFlashcardCoverId(fcCoverId *models.FlashcardCoverById) (int64, error)
 }
 
 type repository struct {
@@ -86,6 +87,19 @@ func (r *repository) ReadFlashcardsByFlashcardCoverId(fFCoverId *models.Flashcar
 	}
 
 	return &flashcards, nil
+}
+
+func (r *repository) DeleteFlashcardsByFlashcardCoverId(fcCoverId *models.FlashcardCoverById) (int64, error) {
+	fcCvrId, err := primitive.ObjectIDFromHex(fcCoverId.ID)
+	if err != nil {
+		return -1, err
+	}
+	res, err := r.Collection.DeleteMany(database.GetDBContext(), bson.M{"flashcard_cover_id": fcCvrId})
+	if err != nil {
+		return -1, err
+	}
+
+	return res.DeletedCount, nil
 }
 
 func NewRepo(collection *mongo.Collection) Repository {

@@ -9,6 +9,7 @@ import (
 	"github.com/gosimple/slug"
 	"github.com/thenewsatria/seenaoo-backend/api/presenters"
 	"github.com/thenewsatria/seenaoo-backend/pkg/flashcardcovers"
+	"github.com/thenewsatria/seenaoo-backend/pkg/flashcardhints"
 	"github.com/thenewsatria/seenaoo-backend/pkg/flashcards"
 	"github.com/thenewsatria/seenaoo-backend/pkg/models"
 	"github.com/thenewsatria/seenaoo-backend/pkg/tags"
@@ -73,8 +74,8 @@ func AddFlashcardCover(flashcardCoverService flashcardcovers.Service, tagService
 
 func GetFlashcardCover(flashcardCoverService flashcardcovers.Service, tagService tags.Service, userService users.Service, flashcardService flashcards.Service) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		fcCoverId := &models.FlashcardCoverBySlug{Slug: c.Params("flashcardCoverSlug")}
-		fcCover, err := flashcardCoverService.FetchFlashcardCoverBySlug(fcCoverId)
+		fcCoverSlug := &models.FlashcardCoverBySlug{Slug: c.Params("flashcardCoverSlug")}
+		fcCover, err := flashcardCoverService.FetchFlashcardCoverBySlug(fcCoverSlug)
 		if err != nil {
 			if err == mongo.ErrNoDocuments {
 				c.Status(http.StatusNotFound)
@@ -120,5 +121,124 @@ func GetFlashcardCover(flashcardCoverService flashcardcovers.Service, tagService
 
 		c.Status(http.StatusOK)
 		return c.JSON(presenters.FlashcardCoverDetailSuccessResponse(fcCover, &tagDetails, flashcards, author))
+	}
+}
+
+func UpdateFlashcardCover(flashcardCoverService flashcardcovers.Service, tagService tags.Service) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		fcCoverSlug := &models.FlashcardCoverBySlug{Slug: c.Params("flashcardCoverSlug")}
+		fcCover, err := flashcardCoverService.FetchFlashcardCoverBySlug(fcCoverSlug)
+		if err != nil {
+			if err == mongo.ErrNoDocuments {
+				c.Status(http.StatusNotFound)
+				return c.JSON(presenters.ErrorResponse(messages.FLASHCARD_COVER_NOT_FOUND_ERROR_MESSAGE))
+			}
+			c.Status(http.StatusInternalServerError)
+			return c.JSON(presenters.ErrorResponse(messages.FLASHCARD_COVER_FAIL_TO_FETCH_ERROR_MESSAGE))
+		}
+
+		updateBody := &models.FlashcardCoverRequest{}
+		if err := c.BodyParser(updateBody); err != nil {
+			c.Status(http.StatusBadRequest)
+			return c.JSON(presenters.ErrorResponse(messages.FLASHCARD_COVER_BODY_PARSER_ERROR_MESSAGE))
+		}
+
+		newSlug := slug.Make(updateBody.Title) + "-" + fmt.Sprintf("%v", time.Now().Unix())
+		fcCover.Slug = newSlug
+		fcCover.Title = updateBody.Title
+		fcCover.Description = updateBody.Description
+		fcCover.Image_path = updateBody.Image_path
+
+		tagIds := []primitive.ObjectID{}
+
+		for _, tagString := range updateBody.Tags {
+			tagName := &models.TagByName{TagName: tagString}
+			existedTag, err := tagService.FetchTagByName(tagName)
+			if err != nil {
+				if err == mongo.ErrNoDocuments { //jika tag tidak ada maka buat baru
+					tag := &models.Tag{TagName: tagString}
+					newTag, err := tagService.InsertTag(tag)
+					if err != nil {
+						c.Status(http.StatusInternalServerError)
+						return c.JSON(presenters.ErrorResponse(messages.TAG_FAIL_TO_INSERT_ERROR_MESSAGE))
+					}
+					tagIds = append(tagIds, newTag.ID)
+					continue
+				}
+				c.Status(http.StatusInternalServerError)
+				return c.JSON(presenters.ErrorResponse(messages.TAG_FAIL_TO_FETCH_ERROR_MESSAGE))
+			}
+			tagIds = append(tagIds, existedTag.ID)
+		}
+
+		fcCover.Tags = tagIds
+		updatedFcCover, err := flashcardCoverService.UpdateFlashcardCover(fcCover)
+		if err != nil {
+			c.Status(http.StatusInternalServerError)
+			return c.JSON(presenters.ErrorResponse(messages.FLASHCARD_COVER_FAIL_TO_UPDATE_ERROR_MESSAGE))
+		}
+
+		c.Status(http.StatusOK)
+		return c.JSON(presenters.FlashcardCoverSuccessResponse(updatedFcCover))
+	}
+}
+
+func DeleteFlashcardCover(flashcardCoverService flashcardcovers.Service) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		fcCoverSlug := &models.FlashcardCoverBySlug{Slug: c.Params("flashcardCoverSlug")}
+		fcCover, err := flashcardCoverService.FetchFlashcardCoverBySlug(fcCoverSlug)
+		if err != nil {
+			c.Status(http.StatusNotFound)
+			return c.JSON(presenters.ErrorResponse(messages.FLASHCARD_COVER_NOT_FOUND_ERROR_MESSAGE))
+		}
+
+		deletedFcCover, err := flashcardCoverService.RemoveFlashcardCover(fcCover)
+		if err != nil {
+			c.Status(http.StatusInternalServerError)
+			return c.JSON(presenters.ErrorResponse(messages.FLASHCARD_COVER_FAIL_TO_DELETE_ERROR_MESSAGE))
+		}
+
+		c.Status(http.StatusOK)
+		return c.JSON(presenters.FlashcardCoverSuccessResponse(deletedFcCover))
+	}
+}
+
+func PurgeFlashcardCover(flashcardCoverService flashcardcovers.Service, flashcardService flashcards.Service, flashcardHintService flashcardhints.Service) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		//Get Flashcard Cover
+		fcCoverSlug := &models.FlashcardCoverBySlug{Slug: c.Params("flashcardCoverId")}
+		fcCover, err := flashcardCoverService.FetchFlashcardCoverBySlug(fcCoverSlug)
+		if err != nil {
+			c.Status(http.StatusNotFound)
+			return c.JSON(presenters.ErrorResponse(messages.FLASHCARD_COVER_NOT_FOUND_ERROR_MESSAGE))
+		}
+
+		//Get flashcards by flashcard cover id so we able to delete each flashcard's hints
+		fcCoverId := &models.FlashcardCoverById{ID: fcCover.ID.Hex()}
+		flashcards, err := flashcardService.PopulateFlashcardCover(fcCoverId)
+		if err != nil {
+			c.Status(http.StatusInternalServerError)
+			return c.JSON(presenters.ErrorResponse(messages.FLASHCARD_COVER_FAIL_TO_POPULATE_FLASHCARDS_ERROR_MESSAGE))
+		}
+
+		//Loop each flashcard to delete each flashcard's hints
+		for _, flashcard := range *flashcards {
+			flashcardId := &models.FlashcardByIdRequest{ID: flashcard.ID.Hex()}
+			_, err := flashcardHintService.RemoveFlashcardHintsByFlashcardId(flashcardId)
+			if err != nil {
+				c.Status(http.StatusInternalServerError)
+				return c.JSON(presenters.ErrorResponse(messages.FLASHCARD_HINT_FAIL_TO_DELETE_ERROR_MESSAGE))
+			}
+		}
+
+		//Delete all flashcard with the same flashcard cover id
+		_, err = flashcardService.RemoveFlashcardsByFlashcardCoverId(fcCoverId)
+		if err != nil {
+			c.Status(http.StatusInternalServerError)
+			return c.JSON(presenters.ErrorResponse(messages.FLASHCARD_FAIL_TO_DELETE_ERROR_MESSAGE))
+		}
+
+		c.Status(http.StatusOK)
+		return c.JSON(presenters.FlashcardCoverSuccessResponse(fcCover))
 	}
 }
