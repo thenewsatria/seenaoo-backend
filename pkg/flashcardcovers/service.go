@@ -8,6 +8,7 @@ type Service interface {
 	FetchFlashcardCoverById(flashcardCoverId *models.FlashcardCoverById) (*models.FlashcardCover, error)
 	FetchFlashcardCoverBySlug(flashcardCoverSlug *models.FlashcardCoverBySlug) (*models.FlashcardCover, error)
 	UpdateFlashcardCover(flashcardCover *models.FlashcardCover) (*models.FlashcardCover, error)
+	FetchFlashcardCoversByTagId(tagId *models.TagById) (*[]models.FlashcardCover, error)
 }
 
 type service struct {
@@ -32,6 +33,10 @@ func (s *service) FetchFlashcardCoverBySlug(flashcardCoverSlug *models.Flashcard
 
 func (s *service) UpdateFlashcardCover(flashcardCover *models.FlashcardCover) (*models.FlashcardCover, error) {
 	return s.repository.UpdateFlashcardCover(flashcardCover)
+}
+
+func (s *service) FetchFlashcardCoversByTagId(tagId *models.TagById) (*[]models.FlashcardCover, error) {
+	return s.repository.ReadFlashcardCoversByTagId(tagId)
 }
 
 func NewService(r Repository) Service {

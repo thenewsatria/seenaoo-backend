@@ -15,13 +15,17 @@ import (
 
 func AddCollaboration(collaboratorService collaborations.Service, userService users.Service, flashcardCoverService flashcardcovers.Service) fiber.Handler {
 	return func(c *fiber.Ctx) error {
+		//get current user
 		currentUser := c.Locals("currentUser").(*models.User)
+
+		//Parse collaboration body request
 		collaboration := &models.Collaboration{}
 		if err := c.BodyParser(collaboration); err != nil {
 			c.Status(http.StatusBadRequest)
 			return c.JSON(presenters.ErrorResponse(messages.COLLABORATION_BODY_PARSER_ERROR_MESSAGE))
 		}
 
+		//Set inviter as current logged in user username
 		collaboration.Inviter = currentUser.Username
 
 		inviterCheckId := &models.UserByUsernameRequest{Username: collaboration.Inviter}
