@@ -13,7 +13,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func AddCollaboration(collaboratorService collaborations.Service, userService users.Service, flashcardCoverService flashcardcovers.Service) fiber.Handler {
+func AddCollaboration(collaboratorService collaborations.Service, userService users.Service, itemService interface{}) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		//get current user
 		currentUser := c.Locals("currentUser").(*models.User)
@@ -28,22 +28,23 @@ func AddCollaboration(collaboratorService collaborations.Service, userService us
 		//Set inviter as current logged in user username
 		collaboration.Inviter = currentUser.Username
 
-		inviterCheckId := &models.UserByUsernameRequest{Username: collaboration.Inviter}
-		if !userService.CheckUsernameIsExist(inviterCheckId) {
+		inviterCheckUname := &models.UserByUsernameRequest{Username: collaboration.Inviter}
+		if !userService.CheckUsernameIsExist(inviterCheckUname) {
 			c.Status(http.StatusNotFound)
 			return c.JSON(presenters.ErrorResponse(messages.COLLABORATION_INVITER_DOESNT_EXIST_ERROR_MESSAGE))
 		}
 
-		collaboratorCheckId := &models.UserByUsernameRequest{Username: collaboration.Collaborator}
-		if !userService.CheckUsernameIsExist(collaboratorCheckId) {
+		collaboratorCheckUname := &models.UserByUsernameRequest{Username: collaboration.Collaborator}
+		if !userService.CheckUsernameIsExist(collaboratorCheckUname) {
 			c.Status(http.StatusNotFound)
 			return c.JSON(presenters.ErrorResponse(messages.COLLABORATION_COLLABORATOR_DOESNT_EXIST_ERROR_MESSAGE))
 		}
 
 		switch collaboration.ItemType {
 		case "FLASHCARD":
-			fcCoverId := &models.FlashcardCoverById{ID: collaboration.ItemID.Hex()}
-			_, err := flashcardCoverService.FetchFlashcardCoverById(fcCoverId)
+			fcCoverId := &models.FlashcardCoverById{ID: c.Params("itemId")}
+			flashcardCoverService := itemService.(flashcardcovers.Service)
+			fcCvr, err := flashcardCoverService.FetchFlashcardCoverById(fcCoverId)
 			if err != nil {
 				if err == mongo.ErrNoDocuments {
 					c.Status(http.StatusNotFound)
@@ -52,6 +53,7 @@ func AddCollaboration(collaboratorService collaborations.Service, userService us
 				c.Status(http.StatusInternalServerError)
 				return c.JSON(presenters.ErrorResponse(messages.FLASHCARD_COVER_FAIL_TO_FETCH_ERROR_MESSAGE))
 			}
+			collaboration.ItemID = fcCvr.ID
 		default:
 			c.Status(http.StatusBadRequest)
 			return c.JSON(presenters.ErrorResponse(messages.COLLABORATION_ITEM_TYPE_IS_UNKNOWN))
@@ -73,7 +75,7 @@ func GetCollaboration(collaborationService collaborations.Service, userService u
 		collabId := &models.CollaborationById{
 			ID: c.Params("collaborationId"),
 		}
-		collab, err := collaborationService.GetCollaboration(collabId)
+		collab, err := collaborationService.FetchCollaboration(collabId)
 		if err != nil {
 			if err == mongo.ErrNoDocuments {
 				c.Status(http.StatusNotFound)
@@ -126,7 +128,7 @@ func GetCollaboration(collaborationService collaborations.Service, userService u
 func UpdateCollaboration(service collaborations.Service) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		collabId := &models.CollaborationById{ID: c.Params("collaborationId")}
-		collab, err := service.GetCollaboration(collabId)
+		collab, err := service.FetchCollaboration(collabId)
 		if err != nil {
 			if err == mongo.ErrNoDocuments {
 				c.Status(http.StatusNotFound)
@@ -158,7 +160,7 @@ func UpdateCollaboration(service collaborations.Service) fiber.Handler {
 func DeleteCollaboration(service collaborations.Service) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		collabId := &models.CollaborationById{ID: c.Params("collaborationId")}
-		collab, err := service.GetCollaboration(collabId)
+		collab, err := service.FetchCollaboration(collabId)
 		if err != nil {
 			if err == mongo.ErrNoDocuments {
 				c.Status(http.StatusNotFound)

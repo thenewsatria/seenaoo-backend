@@ -12,15 +12,16 @@ import (
 func collaborationRouter(app fiber.Router, collaborationService collaborations.Service, userService users.Service, flashcardCoverService flashcardcovers.Service) {
 	collaborationRoutes := app.Group("/collaboration")
 
-	collaborationRoutes.Use(middlewares.CheckAuthorized(userService))
+	collaborationRoutes.Use(middlewares.IsLoggedIn(userService))
 
-	//isLoggedIn
-	collaborationRoutes.Post("/", handlers.AddCollaboration(collaborationService, userService, flashcardCoverService))
+	//isLoggedIn + only the author can invite the collaboration invites
+	collaborationRoutes.Post("/flashcard/:itemId", handlers.AddCollaboration(collaborationService, userService, flashcardCoverService))
 
-	//isLoggedIn and only author or collaborator can update the status
+	//isLoggedIn + only the author can delete the collaboration invites
+	collaborationRoutes.Delete("/:collaborationId", handlers.DeleteCollaboration(collaborationService))
+
+	//isLoggedIn + only author or invited collabotorator can update the status
 	collaborationRoutes.Put("/:collaborationId", handlers.UpdateCollaboration(collaborationService))
 	collaborationRoutes.Get("/:collaborationId", handlers.GetCollaboration(collaborationService, userService, flashcardCoverService))
 
-	//isLoggedIn and only the author can delete the collaboration invites
-	collaborationRoutes.Delete("/:collaborationId", handlers.DeleteCollaboration(collaborationService))
 }

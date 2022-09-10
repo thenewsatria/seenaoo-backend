@@ -16,6 +16,7 @@ type Repository interface {
 	ReadCollaboration(clId *models.CollaborationById) (*models.Collaboration, error)
 	UpdateCollaboration(cl *models.Collaboration) (*models.Collaboration, error)
 	DeleteCollaboration(cl *models.Collaboration) (*models.Collaboration, error)
+	ReadCollaborationsByItemIdAndCollaborator(clIdAndC *models.CollaborationByItemIdAndCollaborator) (*models.Collaboration, error)
 }
 
 type repository struct {
@@ -71,6 +72,21 @@ func (r *repository) CreateCollaboration(cl *models.Collaboration) (*models.Coll
 	}
 
 	return cl, nil
+}
+
+func (r *repository) ReadCollaborationsByItemIdAndCollaborator(clIdAndC *models.CollaborationByItemIdAndCollaborator) (*models.Collaboration, error) {
+	collaboration := &models.Collaboration{}
+	itemId, err := primitive.ObjectIDFromHex(clIdAndC.ItemID)
+	if err != nil {
+		return nil, err
+	}
+
+	err = r.Collection.FindOne(database.GetDBContext(), bson.M{"item_id": itemId, "collaborator": clIdAndC.Collaborator}).Decode(collaboration)
+	if err != nil {
+		return nil, err
+	}
+
+	return collaboration, err
 }
 
 func NewRepo(c *mongo.Collection) Repository {

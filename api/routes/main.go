@@ -1,7 +1,10 @@
 package routes
 
 import (
+	"net/http"
+
 	"github.com/gofiber/fiber/v2"
+	"github.com/thenewsatria/seenaoo-backend/api/middlewares"
 	"github.com/thenewsatria/seenaoo-backend/database"
 	"github.com/thenewsatria/seenaoo-backend/pkg/collaborations"
 	"github.com/thenewsatria/seenaoo-backend/pkg/flashcardcovers"
@@ -44,9 +47,30 @@ func Router(app *fiber.App) {
 	api := app.Group("/api")
 	apiV1 := api.Group("/v1")
 
+	apiV1.Get("/", func(c *fiber.Ctx) error {
+		c.Status(http.StatusOK)
+		return c.JSON(fiber.Map{
+			"success": true,
+		})
+	})
+
 	flashcardRouter(apiV1, flashcardService, flashcardHintService, userService)
 	flashcardHintRouter(apiV1, flashcardHintService, flashcardService, userService)
 	flashcardCoverRouter(apiV1, flashcardCoverService, flashcardService, flashcardHintService, tagService, userService)
 	authenticationRouter(apiV1, userService, refreshTokenService)
 	collaborationRouter(apiV1, collaborationService, userService, flashcardCoverService)
+	tagRouter(apiV1, tagService, flashcardCoverService)
+
+	testing := apiV1.Group("/testing")
+	testing.Get("/", func(c *fiber.Ctx) error {
+		return c.JSON(fiber.Map{
+			"passed_test_id": "sip",
+		})
+	})
+	testing.Use("/:testId", middlewares.TestMW())
+	testing.Get("/:testId", func(c *fiber.Ctx) error {
+		return c.JSON(fiber.Map{
+			"passed_test_id": c.Locals("testingID"),
+		})
+	})
 }

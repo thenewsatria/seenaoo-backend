@@ -15,6 +15,6 @@ func authenticationRouter(app fiber.Router, userService users.Service, refreshTo
 	authRoutes.Post("/register", handlers.RegisterUser(userService, refreshTokenService))
 	authRoutes.Post("/token", handlers.RefreshToken(refreshTokenService, userService))
 
-	authRoutes.Use(middlewares.CheckAuthorized(userService))
+	authRoutes.Use(middlewares.IsLoggedIn(userService))
 	authRoutes.Post("/logout", handlers.UserLogout(refreshTokenService))
 }

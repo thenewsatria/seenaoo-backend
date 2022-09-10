@@ -11,7 +11,7 @@ import (
 func flashcardHintRouter(app fiber.Router, flashcardHintService flashcardhints.Service, flashcardService flashcards.Service, userService users.Service) {
 	flashcardHintRoutes := app.Group("/flashcard-hint")
 
-	//isLoggedIn & author or collaborators can access
+	//isLoggedIn + author or collaborators can access
 	flashcardHintRoutes.Post("/", handlers.AddFlashcardHint(flashcardHintService))
 	flashcardHintRoutes.Put("/:flashcardHintId", handlers.UpdateFlashcardHint(flashcardHintService))
 	flashcardHintRoutes.Delete("/:flashcardHintId", handlers.DeleteFlashcardHint(flashcardHintService))

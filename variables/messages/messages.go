@@ -37,6 +37,10 @@ var AUTH_REFRESH_TOKEN_EXPIRED_ERROR_MESSAGE = "Refresh token expired please log
 var AUTH_REFRESH_TOKEN_BLOCKED_ERROR_MESSAGE = "Refresh token blocked please refresh access token"
 var AUTH_STORED_REFRESH_TOKEN_IS_EMPTY_ERROR_MESSAGE = "Stored refresh token is empty"
 var AUTH_REFRESH_TOKEN_DIFFERENT_FROM_STORED_ERROR_MESSAGE = "Refresh token given is different from the storedc refresh token"
+var AUTH_COLLABORATION_UNAUTHORIZED_ERROR_MESSAGE = "Unauthorized to access this collaboration"
+var AUTH_FLASHCARD_COVER_UNATHORIZED_ERROR_MESSAGE = "Unauthorized to access this flashcard cover"
+var AUTH_FLASHCARD_HINT_UNATHORIZED_ERROR_MESSAGE = "Unauthorized to access this flashcard hint"
+var AUTH_FLASHCARD_UNAUTHORIZED_ERROR_MESSAGE = "Unauthorized to access this flashcard"
 
 var REFRESH_ACCESS_TOKEN_BODY_PARSER_ERROR_MESSAGE = "Error parsing access token body request"
 var REFRESH_TOKEN_FAIL_TO_INSERT_ERROR_MESSAGE = "Failed to insert refresh token to database"
@@ -65,3 +69,5 @@ var FLASHCARD_COVER_FAIL_TO_POPULATE_FLASHCARDS_ERROR_MESSAGE = "Failed to popul
 var TAG_FAIL_TO_FETCH_ERROR_MESSAGE = "Failed to fetch tag from database"
 var TAG_FAIL_TO_INSERT_ERROR_MESSAGE = "Failed to insert tag from database"
 var TAG_NOT_FOUND_ERROR_MESSAGE = "Tag with provided id is not found"
+
+var MIDDLEWARE_ISAUTHOR_UNKNOWN_SERVICE_TYPE_ERROR_MESSAGE = "[isAuthor Middleware]: Unknown service type"

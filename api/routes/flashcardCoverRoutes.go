@@ -21,7 +21,7 @@ func flashcardCoverRouter(app fiber.Router, flashcardCoverService flashcardcover
 	//isLoggedIn can access
 	flashcardCoverRoutes.Post("/", handlers.AddFlashcardCover(flashcardCoverService, tagService))
 
-	//isLoggedIn and author or collaborators can access it
+	//isLoggedIn + author or collaborators can access it
 	flashcardCoverRoutes.Put("/:flashcardCoverSlug", handlers.UpdateFlashcardCover(flashcardCoverService, tagService))
 	flashcardCoverRoutes.Delete("/:flashcardCoverSlug", handlers.DeleteFlashcardCover(flashcardCoverService))
 	flashcardCoverRoutes.Delete("/purge/:flashcardCoverSlug", handlers.PurgeFlashcardCover(flashcardCoverService, flashcardService, flashcardHintService))
