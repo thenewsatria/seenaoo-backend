@@ -65,6 +65,70 @@ func TestMW() fiber.Handler {
 	}
 }
 
+func TestMW2() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		c.Locals("passedParam", 123)
+		return c.Next()
+	}
+}
+
+func TestMW3() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		testId := c.Params("testId")
+		newTestId := testId + "abc"
+		c.Locals("passedParam", 123)
+		c.Locals("mangstap", newTestId)
+		return c.Next()
+	}
+}
+
+func IsAllowedToSendCollaboration(service interface{}, collaborationService collaborations.Service, isCollaboratorAllowed bool) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		currentUser := c.Locals("currentUser").(*models.User)
+		itemCategory := strings.Split(c.Path(), "/")[4]
+		switch itemCategory {
+		case "flashcard":
+			flashcardCoverService := service.(flashcardcovers.Service)
+			fcCoverId := &models.FlashcardCoverById{ID: c.Params("itemId")}
+			fcCover, err := flashcardCoverService.FetchFlashcardCoverById(fcCoverId)
+			if err != nil {
+				if err == mongo.ErrNoDocuments {
+					c.Status(http.StatusNotFound)
+					return c.JSON(presenters.ErrorResponse(messages.FLASHCARD_COVER_NOT_FOUND_ERROR_MESSAGE))
+				}
+				c.Status(http.StatusInternalServerError)
+				return c.JSON(presenters.ErrorResponse(messages.FLASHCARD_COVER_FAIL_TO_FETCH_ERROR_MESSAGE))
+			}
+
+			if fcCover.Author != currentUser.Username {
+				if isCollaboratorAllowed {
+					cItemIdAndCollaborator := &models.CollaborationByItemIdAndCollaborator{ItemID: fcCover.ID.Hex(), Collaborator: currentUser.Username}
+					isCollaborator, err := collaborationService.CheckIsCollaborator(cItemIdAndCollaborator)
+					if err != nil {
+						if err == mongo.ErrNoDocuments {
+							c.Status(http.StatusNotFound)
+							return c.JSON(presenters.ErrorResponse(messages.AUTH_MAKE_COLLABORATION_FLASHCARD_COVER_ERROR_MESAGE))
+						}
+						c.Status(http.StatusInternalServerError)
+						return c.JSON(presenters.ErrorResponse(messages.COLLABORATION_FAIL_TO_FETCH_ERROR_MESSAGE))
+					}
+					if !isCollaborator {
+						c.Status(http.StatusUnauthorized)
+						return c.JSON(presenters.ErrorResponse(messages.AUTH_MAKE_COLLABORATION_FLASHCARD_COVER_ERROR_MESAGE))
+					}
+					return c.Next()
+				}
+				c.Status(http.StatusUnauthorized)
+				return c.JSON(presenters.ErrorResponse(messages.AUTH_MAKE_COLLABORATION_FLASHCARD_COVER_ERROR_MESAGE))
+			}
+		default:
+			c.Status(http.StatusInternalServerError)
+			return c.JSON(presenters.ErrorResponse(messages.MIDDLEWARE_ISAUTHOR_UNKNOWN_SERVICE_TYPE_ERROR_MESSAGE))
+		}
+		return c.Next()
+	}
+}
+
 func IsAuthorized(serviceName string, service interface{}, parentService interface{}, isCollaboratorAllowed bool,
 	collaborationService collaborations.Service) fiber.Handler {
 	return func(c *fiber.Ctx) error {

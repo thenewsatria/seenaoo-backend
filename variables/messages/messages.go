@@ -41,6 +41,7 @@ var AUTH_COLLABORATION_UNAUTHORIZED_ERROR_MESSAGE = "Unauthorized to access this
 var AUTH_FLASHCARD_COVER_UNATHORIZED_ERROR_MESSAGE = "Unauthorized to access this flashcard cover"
 var AUTH_FLASHCARD_HINT_UNATHORIZED_ERROR_MESSAGE = "Unauthorized to access this flashcard hint"
 var AUTH_FLASHCARD_UNAUTHORIZED_ERROR_MESSAGE = "Unauthorized to access this flashcard"
+var AUTH_MAKE_COLLABORATION_FLASHCARD_COVER_ERROR_MESAGE = "Unauthorized to make collaboration with flashcard that you doesn't own"
 
 var REFRESH_ACCESS_TOKEN_BODY_PARSER_ERROR_MESSAGE = "Error parsing access token body request"
 var REFRESH_TOKEN_FAIL_TO_INSERT_ERROR_MESSAGE = "Failed to insert refresh token to database"

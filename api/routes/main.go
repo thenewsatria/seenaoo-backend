@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gofiber/fiber/v2"
@@ -54,9 +55,9 @@ func Router(app *fiber.App) {
 		})
 	})
 
-	flashcardRouter(apiV1, flashcardService, flashcardHintService, userService)
-	flashcardHintRouter(apiV1, flashcardHintService, flashcardService, userService)
-	flashcardCoverRouter(apiV1, flashcardCoverService, flashcardService, flashcardHintService, tagService, userService)
+	flashcardRouter(apiV1, flashcardService, flashcardHintService, flashcardCoverService, userService, collaborationService)
+	flashcardHintRouter(apiV1, flashcardHintService, flashcardService, flashcardCoverService, userService, collaborationService)
+	flashcardCoverRouter(apiV1, flashcardCoverService, flashcardService, flashcardHintService, tagService, userService, collaborationService)
 	authenticationRouter(apiV1, userService, refreshTokenService)
 	collaborationRouter(apiV1, collaborationService, userService, flashcardCoverService)
 	tagRouter(apiV1, tagService, flashcardCoverService)
@@ -67,10 +68,37 @@ func Router(app *fiber.App) {
 			"passed_test_id": "sip",
 		})
 	})
+	testing.Post("/", middlewares.TestMW2(), func(c *fiber.Ctx) error {
+		return c.JSON(fiber.Map{
+			"passed_test_id": "sip2",
+			"data":           c.Locals("passedParam"),
+		})
+	})
+	testing.Delete("/", func(c *fiber.Ctx) error {
+		return c.JSON(fiber.Map{
+			"passed_test_id": "sip2",
+			"data":           c.Locals("passedParam"),
+		})
+	})
 	testing.Use("/:testId", middlewares.TestMW())
 	testing.Get("/:testId", func(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{
 			"passed_test_id": c.Locals("testingID"),
+		})
+	})
+	testing.Post("/:testId", middlewares.TestMW3(), func(c *fiber.Ctx) error {
+		return c.JSON(fiber.Map{
+			"passed_test_id": c.Locals("testingID"),
+			"passedParam":    c.Locals("passedParam"),
+			"newParam":       c.Locals("mangstap"),
+		})
+	})
+	testing.Delete("/:testId", func(c *fiber.Ctx) error {
+		fmt.Print(c.Path())
+		return c.JSON(fiber.Map{
+			"passed_test_id": c.Locals("testingID"),
+			"passedParam":    c.Locals("passedParam"),
+			"newParam":       c.Locals("mangstap"),
 		})
 	})
 }

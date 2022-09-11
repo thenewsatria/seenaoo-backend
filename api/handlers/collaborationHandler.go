@@ -40,6 +40,7 @@ func AddCollaboration(collaboratorService collaborations.Service, userService us
 			return c.JSON(presenters.ErrorResponse(messages.COLLABORATION_COLLABORATOR_DOESNT_EXIST_ERROR_MESSAGE))
 		}
 
+		//Checking ownership of item will be done in middleware
 		switch collaboration.ItemType {
 		case "FLASHCARD":
 			fcCoverId := &models.FlashcardCoverById{ID: c.Params("itemId")}
@@ -53,6 +54,7 @@ func AddCollaboration(collaboratorService collaborations.Service, userService us
 				c.Status(http.StatusInternalServerError)
 				return c.JSON(presenters.ErrorResponse(messages.FLASHCARD_COVER_FAIL_TO_FETCH_ERROR_MESSAGE))
 			}
+
 			collaboration.ItemID = fcCvr.ID
 		default:
 			c.Status(http.StatusBadRequest)
