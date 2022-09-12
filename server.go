@@ -7,6 +7,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/thenewsatria/seenaoo-backend/api/routes"
 	"github.com/thenewsatria/seenaoo-backend/database"
+	"github.com/thenewsatria/seenaoo-backend/database/seeds"
 )
 
 func main() {
@@ -17,6 +18,7 @@ func main() {
 
 	database.ConnectDB()
 	database.PingDB()
+	seeds.SeedPermissionsCollection()
 
 	app := fiber.New()
 
