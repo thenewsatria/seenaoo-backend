@@ -1,7 +1,6 @@
 package flashcardhints
 
 import (
-	"context"
 	"time"
 
 	"github.com/thenewsatria/seenaoo-backend/database"
@@ -69,7 +68,7 @@ func (r *repository) ReadFlashcardHintsByFlashcardId(fId *models.FlashcardByIdRe
 		return nil, err
 	}
 
-	for cursor.Next(context.TODO()) {
+	for cursor.Next(database.GetDBContext()) {
 		var hint = models.FlashcardHint{}
 		err := cursor.Decode(&hint)
 		if err != nil {
