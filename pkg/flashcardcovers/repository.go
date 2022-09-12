@@ -16,6 +16,7 @@ type Repository interface {
 	ReadFlashcardCoverById(fcCoverId *models.FlashcardCoverById) (*models.FlashcardCover, error)
 	UpdateFlashcardCover(fcCover *models.FlashcardCover) (*models.FlashcardCover, error)
 	DeleteFlashcardCover(fcCover *models.FlashcardCover) (*models.FlashcardCover, error)
+	ReadFlashcardCoversByTagId(tId *models.TagById) (*[]models.FlashcardCover, error)
 }
 
 type repository struct {
@@ -77,6 +78,30 @@ func (r *repository) UpdateFlashcardCover(fcCover *models.FlashcardCover) (*mode
 	}
 
 	return fcCover, nil
+}
+
+func (r *repository) ReadFlashcardCoversByTagId(tId *models.TagById) (*[]models.FlashcardCover, error) {
+	taggedFcCover := []models.FlashcardCover{}
+	tagId, err := primitive.ObjectIDFromHex(tId.ID)
+	if err != nil {
+		return nil, err
+	}
+	cursor, err := r.Collection.Find(database.GetDBContext(), bson.M{"tags": tagId})
+	if err != nil {
+		return nil, err
+	}
+
+	for cursor.Next(database.GetDBContext()) {
+		var fcCover = models.FlashcardCover{}
+		err := cursor.Decode(&fcCover)
+		if err != nil {
+			return nil, err
+		}
+
+		taggedFcCover = append(taggedFcCover, fcCover)
+	}
+
+	return &taggedFcCover, nil
 }
 
 func NewRepo(collection *mongo.Collection) Repository {
