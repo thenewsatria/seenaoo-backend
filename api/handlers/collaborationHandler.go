@@ -56,6 +56,9 @@ func AddCollaboration(collaboratorService collaborations.Service, userService us
 			}
 
 			collaboration.ItemID = fcCvr.ID
+
+			//check roleAttachment with itemID and Collaborator here
+
 		default:
 			c.Status(http.StatusBadRequest)
 			return c.JSON(presenters.ErrorResponse(messages.COLLABORATION_ITEM_TYPE_IS_UNKNOWN))
