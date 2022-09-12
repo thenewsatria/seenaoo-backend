@@ -8,6 +8,7 @@ type Service interface {
 	UpdateCollaboration(collaboration *models.Collaboration) (*models.Collaboration, error)
 	RemoveCollaboration(collaboration *models.Collaboration) (*models.Collaboration, error)
 	CheckIsCollaborator(collaborationItemIdAndCollaborator *models.CollaborationByItemIdAndCollaborator) (bool, error)
+	FetchCollaborationByItemIdAndCollaborator(collaborationItemAndCollaborator *models.CollaborationByItemIdAndCollaborator) (*models.Collaboration, error)
 }
 
 type service struct {
@@ -36,6 +37,11 @@ func (s *service) CheckIsCollaborator(collaborationItemIdAndCollaborator *models
 		return false, err
 	}
 	return collaboration.Status == "ACCEPTED", nil
+}
+
+func (s *service) FetchCollaborationByItemIdAndCollaborator(
+	collaborationItemAndCollaborator *models.CollaborationByItemIdAndCollaborator) (*models.Collaboration, error) {
+	return s.repository.ReadCollaborationsByItemIdAndCollaborator(collaborationItemAndCollaborator)
 }
 
 func NewService(r Repository) Service {

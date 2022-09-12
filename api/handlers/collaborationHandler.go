@@ -61,14 +61,39 @@ func AddCollaboration(collaboratorService collaborations.Service, userService us
 			return c.JSON(presenters.ErrorResponse(messages.COLLABORATION_ITEM_TYPE_IS_UNKNOWN))
 		}
 
-		createdCollaboration, err := collaboratorService.InsertCollaboration(collaboration)
+		//if previous collaboration already exist then edit the entity instead, otherwise create new collaboration
+		cItemIdAndCollaborator := &models.CollaborationByItemIdAndCollaborator{
+			ItemID:       collaboration.ItemID.Hex(),
+			Collaborator: collaboration.Collaborator,
+		}
+		existedCollab, err := collaboratorService.FetchCollaborationByItemIdAndCollaborator(cItemIdAndCollaborator)
 		if err != nil {
+			if err == mongo.ErrNoDocuments {
+				createdCollaboration, err := collaboratorService.InsertCollaboration(collaboration)
+				if err != nil {
+					c.Status(http.StatusInternalServerError)
+					return c.JSON(presenters.ErrorResponse(messages.COLLABORATION_FAIL_TO_INSERT_ERROR_MESSAGE))
+				}
+				c.Status(http.StatusOK)
+				return c.JSON(presenters.CollaborationSuccessResponse(createdCollaboration))
+			}
 			c.Status(http.StatusInternalServerError)
-			return c.JSON(presenters.ErrorResponse(messages.COLLABORATION_FAIL_TO_INSERT_ERROR_MESSAGE))
+			return c.JSON(presenters.ErrorResponse(messages.COLLABORATION_FAIL_TO_FETCH_ERROR_MESSAGE))
 		}
 
-		c.Status(http.StatusOK)
-		return c.JSON(presenters.CollaborationSuccessResponse(createdCollaboration))
+		if existedCollab.Status == "REJECTED" {
+			existedCollab.Status = "SENT"
+			updatedCollab, err := collaboratorService.UpdateCollaboration(existedCollab)
+			if err != nil {
+				c.Status(http.StatusInternalServerError)
+				return c.JSON(presenters.ErrorResponse(messages.COLLABORATION_FAIL_TO_UPDATE_ERROR_MESSAGE))
+			}
+			c.Status(http.StatusOK)
+			return c.JSON(presenters.CollaborationSuccessResponse(updatedCollab))
+		} else {
+			c.Status(http.StatusBadRequest)
+			return c.JSON(presenters.ErrorResponse(messages.COLLABORATION_ALREADY_EXIST_ERROR_MESSAGE))
+		}
 	}
 }
 

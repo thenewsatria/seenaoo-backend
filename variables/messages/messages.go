@@ -58,6 +58,7 @@ var COLLABORATION_ITEM_TYPE_IS_UNKNOWN = "Collaboration item type is unknown"
 var COLLABORATION_FAIL_TO_UPDATE_ERROR_MESSAGE = "Failed to update collaboration"
 var COLLABORATION_FAIL_TO_FETCH_ERROR_MESSAGE = "Failed to fetch collaboration"
 var COLLABORATION_FAIL_TO_DELETE_ERROR_MESSAGE = "Failed to fetch collaboration"
+var COLLABORATION_ALREADY_EXIST_ERROR_MESSAGE = "User already invited to the same item, unable to establish duplicate collaboration"
 
 var FLASHCARD_COVER_NOT_FOUND_ERROR_MESSAGE = "Flashcard cover with provided id is not found"
 var FLASHCARD_COVER_FAIL_TO_FETCH_ERROR_MESSAGE = "Failed to fetch flashcard from database"
