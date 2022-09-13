@@ -16,3 +16,15 @@ type Role struct {
 	CreatedAt   time.Time            `bson:"createdAt" json:"createdAt"`
 	UpdatedAt   time.Time            `bson:"updatedAt" json:"updatedAt"`
 }
+
+type RoleById struct {
+	ID string `bson:"_id" json:"id"`
+}
+
+type RoleByOwner struct {
+	Owner string `bson:"owner" json:"owner"`
+}
+
+type RoleBySlug struct {
+	Slug string `bson:"slug" json:"slug"`
+}
