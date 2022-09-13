@@ -73,8 +73,14 @@ var TAG_FAIL_TO_INSERT_ERROR_MESSAGE = "Failed to insert tag from database"
 var TAG_NOT_FOUND_ERROR_MESSAGE = "Tag with provided id is not found"
 
 var ROLE_BODY_PARSER_ERROR_MESSAGE = "Error parsing role body request"
-var ROLE_COVER_FAIL_TO_INSERT_ERROR_MESSAGE = "Failed to insert role from database"
-var ROLE_COVER_FAIL_TO_FETCH_ERROR_MESSAGE = "Failed to fetch role from database"
+var ROLE_FAIL_TO_INSERT_ERROR_MESSAGE = "Failed to insert role from database"
+var ROLE_FAIL_TO_FETCH_ERROR_MESSAGE = "Failed to fetch role from database"
+var ROLE_FAIL_TO_UPDATE_ERROR_MESSAGE = "Failed to update role from database"
+var ROLE_FAIL_TO_DELETE_ERROR_MESSAGE = "Failed to delete role from database"
+var ROLE_NOT_FOUND_ERROR_MESSAGE = "Role with provided slug is not found"
+
+var PERMISSION_FAIL_TO_FETCH_ERROR_MESSAGE = "Failed to fetch permission from database"
+var PERMISSION_NOT_FOUND_ERROR_MESSAGE = "Permission with provided id is not found"
 
 var MIDDLEWARE_ISAUTHOR_UNKNOWN_SERVICE_TYPE_ERROR_MESSAGE = "[isAuthor Middleware]: Unknown service type"
 var MIDDLEWARE_ISALLOWEDTOSENDCOLLABORATION_UNKNOWN_ITEM_CATEGORY_ERROR_MESSAGE = "[isAllowedToSendCollaboration Middleware]: Unknown item category"

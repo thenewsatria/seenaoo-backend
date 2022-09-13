@@ -14,7 +14,7 @@ import (
 
 func ShowItemsByTagName(tagService tags.Service, flashcardCoverService flashcardcovers.Service) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		tagName := &models.TagByName{TagName: c.Params(":tagName")}
+		tagName := &models.TagByName{TagName: c.Params("tagName")}
 		tag, err := tagService.FetchTagByName(tagName)
 		if err != nil {
 			if err == mongo.ErrNoDocuments {
