@@ -23,22 +23,18 @@ func (s *service) FetchRoleById(roleId *models.RoleById) (*models.Role, error) {
 	return s.repository.ReadRoleById(roleId)
 }
 
-// FetchRoleBySlug implements Service
 func (s *service) FetchRoleBySlug(roleSlug *models.RoleBySlug) (*models.Role, error) {
 	return s.repository.ReadRoleBySlug(roleSlug)
 }
 
-// FetchRolesByOwner implements Service
 func (s *service) FetchRolesByOwner(roleOwner *models.RoleByOwner) (*[]models.Role, error) {
 	return s.repository.ReadRolesByOwner(roleOwner)
 }
 
-// InsertRole implements Service
 func (s *service) InsertRole(role *models.Role) (*models.Role, error) {
 	return s.repository.CreateRole(role)
 }
 
-// UpdateRole implements Service
 func (s *service) UpdateRole(role *models.Role) (*models.Role, error) {
 	return s.repository.UpdateRole(role)
 }

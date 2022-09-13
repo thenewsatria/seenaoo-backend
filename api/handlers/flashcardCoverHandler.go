@@ -62,13 +62,13 @@ func AddFlashcardCover(flashcardCoverService flashcardcovers.Service, tagService
 			Author:      currentUser.Username,
 		}
 
-		_, err = flashcardCoverService.InsertFlashcardCover(fcCover)
+		insertedFcCover, err := flashcardCoverService.InsertFlashcardCover(fcCover)
 		if err != nil {
 			c.Status(http.StatusInternalServerError)
 			return c.JSON(presenters.ErrorResponse(messages.FLASHCARD_COVER_FAIL_TO_INSERT_ERROR_MESSAGE))
 		}
 
-		return c.JSON(presenters.FlashcardCoverSuccessResponse(fcCover))
+		return c.JSON(presenters.FlashcardCoverSuccessResponse(insertedFcCover))
 	}
 }
 
