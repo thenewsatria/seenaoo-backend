@@ -150,3 +150,22 @@ func DeleteRole(roleService roles.Service) fiber.Handler {
 		return c.JSON(presenters.RoleSuccessResponse(deletedRole))
 	}
 }
+
+func GetMyRole(roleService roles.Service) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		currentUser := c.Locals("currentUser").(*models.User)
+		roleOwner := &models.RoleByOwner{Owner: currentUser.Username}
+		roles, err := roleService.FetchRolesByOwner(roleOwner)
+		if err != nil {
+			if err == mongo.ErrNoDocuments {
+				c.Status(http.StatusNotFound)
+				return c.JSON(presenters.ErrorResponse(messages.ROLE_NOT_FOUND_ERROR_MESSAGE))
+			}
+			c.Status(http.StatusInternalServerError)
+			return c.JSON(presenters.ErrorResponse(messages.ROLE_FAIL_TO_FETCH_ERROR_MESSAGE))
+		}
+
+		c.Status(http.StatusNotFound)
+		return c.JSON(presenters.RolesSuccessResponse(roles))
+	}
+}

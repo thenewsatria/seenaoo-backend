@@ -84,3 +84,25 @@ func RoleDetailSuccessResponse(r *models.Role, u *models.User, p *[]models.Permi
 		"error":   nil,
 	}
 }
+
+func RolesSuccessResponse(rs *[]models.Role) *fiber.Map {
+	var roles = []Role{}
+	for _, r := range *rs {
+		role := &Role{
+			ID:          r.ID,
+			Owner:       r.Owner,
+			Name:        r.Name,
+			Slug:        r.Slug,
+			Description: r.Description,
+			Permissions: r.Permissions,
+			CreatedAt:   r.CreatedAt,
+			UpdatedAt:   r.CreatedAt,
+		}
+		roles = append(roles, *role)
+	}
+	return &fiber.Map{
+		"success": true,
+		"data":    roles,
+		"error":   nil,
+	}
+}

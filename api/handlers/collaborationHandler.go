@@ -166,7 +166,6 @@ func GetCollaboration(collaborationService collaborations.Service, userService u
 	}
 }
 
-// Add updateCollaborationStatus for collaborator so its not also updating role
 func UpdateCollabStatus(service collaborations.Service) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		collabId := &models.CollaborationById{ID: c.Params("collaborationId")}
