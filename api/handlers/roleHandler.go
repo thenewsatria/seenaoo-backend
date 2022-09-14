@@ -151,7 +151,7 @@ func DeleteRole(roleService roles.Service) fiber.Handler {
 	}
 }
 
-func GetMyRole(roleService roles.Service) fiber.Handler {
+func GetMyRoles(roleService roles.Service) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		currentUser := c.Locals("currentUser").(*models.User)
 		roleOwner := &models.RoleByOwner{Owner: currentUser.Username}

@@ -11,10 +11,12 @@ import (
 	"github.com/thenewsatria/seenaoo-backend/pkg/flashcardhints"
 	"github.com/thenewsatria/seenaoo-backend/pkg/flashcards"
 	"github.com/thenewsatria/seenaoo-backend/pkg/models"
+	"github.com/thenewsatria/seenaoo-backend/pkg/permissions"
 	"github.com/thenewsatria/seenaoo-backend/pkg/roles"
 	"github.com/thenewsatria/seenaoo-backend/pkg/users"
 	"github.com/thenewsatria/seenaoo-backend/utils"
 	"github.com/thenewsatria/seenaoo-backend/variables/messages"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -68,6 +70,8 @@ func TestMW() fiber.Handler {
 
 func TestMW2() fiber.Handler {
 	return func(c *fiber.Ctx) error {
+		testId := c.Params("testId2")
+		c.Locals("testingID", testId)
 		c.Locals("passedParam", 123)
 		return c.Next()
 	}
@@ -83,7 +87,8 @@ func TestMW3() fiber.Handler {
 	}
 }
 
-func IsAllowedToSendCollaboration(service interface{}, collaborationService collaborations.Service, isCollaboratorAllowed bool) fiber.Handler {
+func IsAllowedToSendCollaboration(service interface{}, collaborationService collaborations.Service,
+	roleService roles.Service, isCollaboratorAllowed bool) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		currentUser := c.Locals("currentUser").(*models.User)
 		itemCategory := strings.Split(c.Path(), "/")[4]
@@ -117,6 +122,24 @@ func IsAllowedToSendCollaboration(service interface{}, collaborationService coll
 						c.Status(http.StatusUnauthorized)
 						return c.JSON(presenters.ErrorResponse(messages.AUTH_MAKE_COLLABORATION_FLASHCARD_COVER_ERROR_MESAGE))
 					}
+					collaborator, err := collaborationService.FetchCollaborationByItemIdAndCollaborator(cItemIdAndCollaborator)
+					if err != nil {
+						c.Status(http.StatusInternalServerError)
+						return c.JSON(presenters.ErrorResponse(messages.COLLABORATION_FAIL_TO_FETCH_ERROR_MESSAGE))
+					}
+
+					roleId := &models.RoleById{ID: collaborator.ID.Hex()}
+					role, err := roleService.FetchRoleById(roleId)
+					if err != nil {
+						if err == mongo.ErrNoDocuments {
+							c.Status(http.StatusNotFound)
+							return c.JSON(presenters.ErrorResponse(messages.COLLABORATION_ROLE_ID_INVALID_ERROR_MESSAGE))
+						}
+						c.Status(http.StatusInternalServerError)
+						return c.JSON(presenters.ErrorResponse(messages.ROLE_FAIL_TO_FETCH_ERROR_MESSAGE))
+					}
+					c.Locals("isAuthor", false)
+					c.Locals("userPermissions", role.Permissions)
 					return c.Next()
 				}
 				c.Status(http.StatusUnauthorized)
@@ -126,12 +149,14 @@ func IsAllowedToSendCollaboration(service interface{}, collaborationService coll
 			c.Status(http.StatusInternalServerError)
 			return c.JSON(presenters.ErrorResponse(messages.MIDDLEWARE_ISAUTHOR_UNKNOWN_SERVICE_TYPE_ERROR_MESSAGE))
 		}
+
+		c.Locals("isAuthor", true)
 		return c.Next()
 	}
 }
 
 func IsAuthorized(serviceName string, service interface{}, parentService interface{}, isCollaboratorAllowed bool,
-	collaborationService collaborations.Service) fiber.Handler {
+	collaborationService collaborations.Service, roleService roles.Service) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		currentUser := c.Locals("currentUser").(*models.User)
 		switch serviceName {
@@ -188,6 +213,24 @@ func IsAuthorized(serviceName string, service interface{}, parentService interfa
 						c.Status(http.StatusUnauthorized)
 						return c.JSON(presenters.ErrorResponse(messages.AUTH_FLASHCARD_COVER_UNATHORIZED_ERROR_MESSAGE))
 					}
+					collaborator, err := collaborationService.FetchCollaborationByItemIdAndCollaborator(cItemIdAndCollaborator)
+					if err != nil {
+						c.Status(http.StatusInternalServerError)
+						return c.JSON(presenters.ErrorResponse(messages.COLLABORATION_FAIL_TO_FETCH_ERROR_MESSAGE))
+					}
+
+					roleId := &models.RoleById{ID: collaborator.ID.Hex()}
+					role, err := roleService.FetchRoleById(roleId)
+					if err != nil {
+						if err == mongo.ErrNoDocuments {
+							c.Status(http.StatusNotFound)
+							return c.JSON(presenters.ErrorResponse(messages.COLLABORATION_ROLE_ID_INVALID_ERROR_MESSAGE))
+						}
+						c.Status(http.StatusInternalServerError)
+						return c.JSON(presenters.ErrorResponse(messages.ROLE_FAIL_TO_FETCH_ERROR_MESSAGE))
+					}
+					c.Locals("isAuthor", false)
+					c.Locals("userPermissions", role.Permissions)
 					return c.Next()
 				}
 				c.Status(http.StatusUnauthorized)
@@ -235,6 +278,24 @@ func IsAuthorized(serviceName string, service interface{}, parentService interfa
 						c.Status(http.StatusUnauthorized)
 						return c.JSON(presenters.ErrorResponse(messages.AUTH_FLASHCARD_HINT_UNATHORIZED_ERROR_MESSAGE))
 					}
+					collaborator, err := collaborationService.FetchCollaborationByItemIdAndCollaborator(cItemIdAndCollaborator)
+					if err != nil {
+						c.Status(http.StatusInternalServerError)
+						return c.JSON(presenters.ErrorResponse(messages.COLLABORATION_FAIL_TO_FETCH_ERROR_MESSAGE))
+					}
+
+					roleId := &models.RoleById{ID: collaborator.ID.Hex()}
+					role, err := roleService.FetchRoleById(roleId)
+					if err != nil {
+						if err == mongo.ErrNoDocuments {
+							c.Status(http.StatusNotFound)
+							return c.JSON(presenters.ErrorResponse(messages.COLLABORATION_ROLE_ID_INVALID_ERROR_MESSAGE))
+						}
+						c.Status(http.StatusInternalServerError)
+						return c.JSON(presenters.ErrorResponse(messages.ROLE_FAIL_TO_FETCH_ERROR_MESSAGE))
+					}
+					c.Locals("isAuthor", false)
+					c.Locals("userPermissions", role.Permissions)
 					return c.Next()
 				}
 				c.Status(http.StatusUnauthorized)
@@ -281,6 +342,24 @@ func IsAuthorized(serviceName string, service interface{}, parentService interfa
 						c.Status(http.StatusUnauthorized)
 						return c.JSON(presenters.ErrorResponse(messages.AUTH_FLASHCARD_UNAUTHORIZED_ERROR_MESSAGE))
 					}
+					collaborator, err := collaborationService.FetchCollaborationByItemIdAndCollaborator(cItemIdAndCollaborator)
+					if err != nil {
+						c.Status(http.StatusInternalServerError)
+						return c.JSON(presenters.ErrorResponse(messages.COLLABORATION_FAIL_TO_FETCH_ERROR_MESSAGE))
+					}
+
+					roleId := &models.RoleById{ID: collaborator.ID.Hex()}
+					role, err := roleService.FetchRoleById(roleId)
+					if err != nil {
+						if err == mongo.ErrNoDocuments {
+							c.Status(http.StatusNotFound)
+							return c.JSON(presenters.ErrorResponse(messages.COLLABORATION_ROLE_ID_INVALID_ERROR_MESSAGE))
+						}
+						c.Status(http.StatusInternalServerError)
+						return c.JSON(presenters.ErrorResponse(messages.ROLE_FAIL_TO_FETCH_ERROR_MESSAGE))
+					}
+					c.Locals("isAuthor", false)
+					c.Locals("userPermissions", role.Permissions)
 					return c.Next()
 				}
 				c.Status(http.StatusUnauthorized)
@@ -300,23 +379,6 @@ func IsAuthorized(serviceName string, service interface{}, parentService interfa
 			}
 
 			if rl.Owner != currentUser.Username {
-				if isCollaboratorAllowed {
-					cItemIdAndCollaborator := &models.CollaborationByItemIdAndCollaborator{ItemID: rl.ID.Hex(), Collaborator: currentUser.Username}
-					isCollaborator, err := collaborationService.CheckIsCollaborator(cItemIdAndCollaborator)
-					if err != nil {
-						if err == mongo.ErrNoDocuments {
-							c.Status(http.StatusNotFound)
-							return c.JSON(presenters.ErrorResponse(messages.AUTH_ROLE_UNAUTHORIZED_ERROR_MESSAGE))
-						}
-						c.Status(http.StatusInternalServerError)
-						return c.JSON(presenters.ErrorResponse(messages.COLLABORATION_FAIL_TO_FETCH_ERROR_MESSAGE))
-					}
-					if !isCollaborator {
-						c.Status(http.StatusUnauthorized)
-						return c.JSON(presenters.ErrorResponse(messages.AUTH_ROLE_UNAUTHORIZED_ERROR_MESSAGE))
-					}
-					return c.Next()
-				}
 				c.Status(http.StatusUnauthorized)
 				return c.JSON(presenters.ErrorResponse(messages.AUTH_ROLE_UNAUTHORIZED_ERROR_MESSAGE))
 			}
@@ -325,6 +387,59 @@ func IsAuthorized(serviceName string, service interface{}, parentService interfa
 			return c.JSON(presenters.ErrorResponse(messages.MIDDLEWARE_ISAUTHOR_UNKNOWN_SERVICE_TYPE_ERROR_MESSAGE))
 		}
 
+		c.Locals("isAuthor", true)
 		return c.Next()
+	}
+}
+
+func HavePermit(permissionService permissions.Service, mustHaveAll bool, allowedPermissions ...string) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		if isAuthor := c.Locals("isAuthor").(bool); isAuthor {
+			return c.Next()
+		}
+		userPermissions := c.Locals("userPermissions").([]primitive.ObjectID)
+		userPermitStr := []string{}
+		for _, permission := range userPermissions {
+			permitId := &models.PermissionById{ID: permission.Hex()}
+			permit, err := permissionService.FetchPermissionById(permitId)
+			if err != nil {
+				if err == mongo.ErrNoDocuments {
+					c.Status(http.StatusNotFound)
+					return c.JSON(presenters.ErrorResponse(messages.ROLE_NOT_FOUND_ERROR_MESSAGE))
+				}
+				c.Status(http.StatusInternalServerError)
+				return c.JSON(presenters.ErrorResponse(messages.ROLE_FAIL_TO_FETCH_ERROR_MESSAGE))
+			}
+			permitString := permit.ItemCategory + "." + permit.Name
+			userPermitStr = append(userPermitStr, permitString)
+		}
+
+		var trueAllowedPermit = make([]int, len(allowedPermissions))
+		var allowedPermitCount = 0
+
+		for i := 0; i < len(allowedPermissions); i++ {
+			for _, userPermit := range userPermitStr {
+				if userPermit == allowedPermissions[i] {
+					if !mustHaveAll {
+						return c.Next()
+					}
+					trueAllowedPermit[i] = 1
+					break
+				}
+			}
+			if mustHaveAll && trueAllowedPermit[i] != 1 {
+				c.Status(http.StatusUnauthorized)
+				return c.JSON(presenters.ErrorResponse(messages.AUTH_DONT_HAVE_SUITABLE_PERMISSION_ERROR_MESSAGE))
+			}
+		}
+		for _, num := range trueAllowedPermit {
+			allowedPermitCount += num
+		}
+		if allowedPermitCount == len(allowedPermissions) {
+			return c.Next()
+		}
+
+		c.Status(http.StatusUnauthorized)
+		return c.JSON(presenters.ErrorResponse(messages.AUTH_DONT_HAVE_SUITABLE_PERMISSION_ERROR_MESSAGE))
 	}
 }

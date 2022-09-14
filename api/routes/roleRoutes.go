@@ -14,10 +14,10 @@ func roleRouter(app fiber.Router, roleService roles.Service, userService users.S
 
 	roleRoutes.Use(middlewares.IsLoggedIn(userService))
 	roleRoutes.Post("/", handlers.MakeNewRole(roleService))
-	roleRoutes.Get("/me", handlers.GetMyRole(roleService))
+	roleRoutes.Get("/me", handlers.GetMyRoles(roleService))
 
 	//isLoggedIn + only author can see detail, update and delete the role
-	roleRoutes.Use(middlewares.IsAuthorized("ROLE", roleService, nil, false, nil))
+	roleRoutes.Use(middlewares.IsAuthorized("ROLE", roleService, nil, false, nil, nil))
 	roleRoutes.Get("/:roleSlug", handlers.GetRole(roleService, userService, permissionService))
 	roleRoutes.Put("/:roleSlug", handlers.UpdateRole(roleService))
 	roleRoutes.Delete("/:roleSlug", handlers.DeleteRole(roleService))

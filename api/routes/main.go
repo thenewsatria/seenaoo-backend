@@ -11,6 +11,7 @@ import (
 	"github.com/thenewsatria/seenaoo-backend/pkg/flashcardcovers"
 	"github.com/thenewsatria/seenaoo-backend/pkg/flashcardhints"
 	"github.com/thenewsatria/seenaoo-backend/pkg/flashcards"
+	"github.com/thenewsatria/seenaoo-backend/pkg/permissions"
 	"github.com/thenewsatria/seenaoo-backend/pkg/refreshtokens"
 	"github.com/thenewsatria/seenaoo-backend/pkg/roles"
 	"github.com/thenewsatria/seenaoo-backend/pkg/tags"
@@ -50,6 +51,10 @@ func Router(app *fiber.App) {
 	var roleRepo = roles.NewRepo(roleCollection)
 	var roleService = roles.NewService(roleRepo)
 
+	var permissionCollection = database.UseDB().Collection(permissions.CollectionName)
+	var permissionRepo = permissions.NewRepo(permissionCollection)
+	var permissionService = permissions.NewService(permissionRepo)
+
 	api := app.Group("/api")
 	apiV1 := api.Group("/v1")
 
@@ -60,11 +65,12 @@ func Router(app *fiber.App) {
 		})
 	})
 
-	flashcardRouter(apiV1, flashcardService, flashcardHintService, flashcardCoverService, userService, collaborationService)
-	flashcardHintRouter(apiV1, flashcardHintService, flashcardService, flashcardCoverService, userService, collaborationService)
-	flashcardCoverRouter(apiV1, flashcardCoverService, flashcardService, flashcardHintService, tagService, userService, collaborationService)
+	flashcardRouter(apiV1, flashcardService, flashcardHintService, flashcardCoverService, userService, collaborationService, roleService, permissionService)
+	flashcardHintRouter(apiV1, flashcardHintService, flashcardService, flashcardCoverService, userService, collaborationService, roleService, permissionService)
+	flashcardCoverRouter(apiV1, flashcardCoverService, flashcardService, flashcardHintService, tagService,
+		userService, collaborationService, roleService, permissionService)
 	authenticationRouter(apiV1, userService, refreshTokenService)
-	collaborationRouter(apiV1, collaborationService, userService, flashcardCoverService, roleService)
+	collaborationRouter(apiV1, collaborationService, userService, flashcardCoverService, roleService, permissionService)
 	tagRouter(apiV1, tagService, flashcardCoverService)
 
 	testing := apiV1.Group("/testing")
@@ -100,6 +106,20 @@ func Router(app *fiber.App) {
 	})
 	testing.Delete("/:testId", func(c *fiber.Ctx) error {
 		fmt.Print(c.Path())
+		return c.JSON(fiber.Map{
+			"passed_test_id": c.Locals("testingID"),
+			"passedParam":    c.Locals("passedParam"),
+			"newParam":       c.Locals("mangstap"),
+		})
+	})
+	testing.Delete("/purge/:testId2", middlewares.TestMW2(), middlewares.TestMW3(), func(c *fiber.Ctx) error {
+		return c.JSON(fiber.Map{
+			"passed_test_id": c.Locals("testingID"),
+			"passedParam":    c.Locals("passedParam"),
+			"newParam":       c.Locals("mangstap"),
+		})
+	})
+	testing.Delete("/:testId/blabla", middlewares.TestMW3(), func(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{
 			"passed_test_id": c.Locals("testingID"),
 			"passedParam":    c.Locals("passedParam"),

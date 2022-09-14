@@ -43,6 +43,7 @@ var AUTH_FLASHCARD_HINT_UNATHORIZED_ERROR_MESSAGE = "Unauthorized to access this
 var AUTH_FLASHCARD_UNAUTHORIZED_ERROR_MESSAGE = "Unauthorized to access this flashcard route"
 var AUTH_ROLE_UNAUTHORIZED_ERROR_MESSAGE = "Unauthorized to access this role route"
 var AUTH_MAKE_COLLABORATION_FLASHCARD_COVER_ERROR_MESAGE = "Unauthorized to make collaboration with flashcard that you doesn't own"
+var AUTH_DONT_HAVE_SUITABLE_PERMISSION_ERROR_MESSAGE = "You dont have permission to access this resource"
 
 var REFRESH_ACCESS_TOKEN_BODY_PARSER_ERROR_MESSAGE = "Error parsing access token body request"
 var REFRESH_TOKEN_FAIL_TO_INSERT_ERROR_MESSAGE = "Failed to insert refresh token to database"
@@ -60,6 +61,7 @@ var COLLABORATION_FAIL_TO_UPDATE_ERROR_MESSAGE = "Failed to update collaboration
 var COLLABORATION_FAIL_TO_FETCH_ERROR_MESSAGE = "Failed to fetch collaboration"
 var COLLABORATION_FAIL_TO_DELETE_ERROR_MESSAGE = "Failed to fetch collaboration"
 var COLLABORATION_ALREADY_EXIST_ERROR_MESSAGE = "User already invited to the same item, unable to establish duplicate collaboration"
+var COLLABORATION_ROLE_ID_INVALID_ERROR_MESSAGE = "Collaboration have invalid role id"
 
 var FLASHCARD_COVER_NOT_FOUND_ERROR_MESSAGE = "Flashcard cover with provided id is not found"
 var FLASHCARD_COVER_FAIL_TO_FETCH_ERROR_MESSAGE = "Failed to fetch flashcard from database"

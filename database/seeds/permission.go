@@ -112,6 +112,14 @@ func SeedPermissionsCollection() {
 			CreatedAt:    time.Now(),
 			UpdatedAt:    time.Now(),
 		},
+		models.Permission{
+			ID:           primitive.NewObjectID(),
+			ItemCategory: "FLASHCARD",
+			Name:         "INVITE_COLLABORATOR",
+			Description:  "",
+			CreatedAt:    time.Now(),
+			UpdatedAt:    time.Now(),
+		},
 	}
 	insertCount, err := permissionCollection.InsertMany(database.GetDBContext(), permissions)
 	if err != nil {
