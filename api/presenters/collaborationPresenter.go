@@ -15,6 +15,7 @@ type Collaboration struct {
 	ItemID       primitive.ObjectID `bson:"item_id" json:"itemId"`
 	ItemType     string             `bson:"item_type" json:"itemType"`
 	Status       string             `bson:"status" json:"status"`
+	RoleId       primitive.ObjectID `bson:"roleId" json:"roleId"`
 	CreatedAt    time.Time          `bson:"created_at" json:"createdAt"`
 	UpdatedAt    time.Time          `bson:"updated_at" json:"updatedAt"`
 }
@@ -26,6 +27,7 @@ type CollaborationFlashcardCoverDetail struct {
 	Item         FlashcardCover     `bson:"item" json:"item"`
 	ItemType     string             `bson:"item_type" json:"itemType"`
 	Status       string             `bson:"status" json:"status"`
+	Role         Role               `bson:"role" json:"role"`
 	CreatedAt    time.Time          `bson:"created_at" json:"createdAt"`
 	UpdatedAt    time.Time          `bson:"updated_at" json:"updatedAt"`
 }
@@ -49,7 +51,8 @@ func CollaborationSuccessResponse(collaboration *models.Collaboration) *fiber.Ma
 	}
 }
 
-func CollaborationFlashcardDetailSuccessResponse(collaboration *models.Collaboration, inviter *models.User, collaborator *models.User, flashcardCover *models.FlashcardCover) *fiber.Map {
+func CollaborationFlashcardDetailSuccessResponse(collaboration *models.Collaboration, inviter *models.User,
+	collaborator *models.User, flashcardCover *models.FlashcardCover, r *models.Role) *fiber.Map {
 	invUser := &User{
 		Username:        inviter.Username,
 		DisplayName:     inviter.DisplayName,
@@ -78,6 +81,17 @@ func CollaborationFlashcardDetailSuccessResponse(collaboration *models.Collabora
 		UpdatedAt:   flashcardCover.UpdatedAt,
 	}
 
+	role := &Role{
+		ID:          r.ID,
+		Owner:       r.Owner,
+		Name:        r.Name,
+		Slug:        r.Slug,
+		Description: r.Description,
+		Permissions: r.Permissions,
+		CreatedAt:   r.CreatedAt,
+		UpdatedAt:   r.UpdatedAt,
+	}
+
 	collabFlashcardCoverDetail := &CollaborationFlashcardCoverDetail{
 		ID:           collaboration.ID,
 		Inviter:      *invUser,
@@ -85,6 +99,7 @@ func CollaborationFlashcardDetailSuccessResponse(collaboration *models.Collabora
 		Item:         *fcCover,
 		ItemType:     collaboration.ItemType,
 		Status:       collaboration.Status,
+		Role:         *role,
 		CreatedAt:    collaboration.CreatedAt,
 		UpdatedAt:    collaboration.UpdatedAt,
 	}

@@ -8,6 +8,7 @@ import (
 	"github.com/thenewsatria/seenaoo-backend/pkg/collaborations"
 	"github.com/thenewsatria/seenaoo-backend/pkg/flashcardcovers"
 	"github.com/thenewsatria/seenaoo-backend/pkg/models"
+	"github.com/thenewsatria/seenaoo-backend/pkg/roles"
 	"github.com/thenewsatria/seenaoo-backend/pkg/users"
 	"github.com/thenewsatria/seenaoo-backend/variables/messages"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -57,8 +58,6 @@ func AddCollaboration(collaboratorService collaborations.Service, userService us
 
 			collaboration.ItemID = fcCvr.ID
 
-			//check roleAttachment with itemID and Collaborator here
-
 		default:
 			c.Status(http.StatusBadRequest)
 			return c.JSON(presenters.ErrorResponse(messages.COLLABORATION_ITEM_TYPE_IS_UNKNOWN))
@@ -100,7 +99,8 @@ func AddCollaboration(collaboratorService collaborations.Service, userService us
 	}
 }
 
-func GetCollaboration(collaborationService collaborations.Service, userService users.Service, flashcardCoverService flashcardcovers.Service) fiber.Handler {
+func GetCollaboration(collaborationService collaborations.Service, userService users.Service,
+	flashcardCoverService flashcardcovers.Service, roleService roles.Service) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		collabId := &models.CollaborationById{
 			ID: c.Params("collaborationId"),
@@ -137,6 +137,17 @@ func GetCollaboration(collaborationService collaborations.Service, userService u
 			return c.JSON(presenters.ErrorResponse(messages.USER_FAIL_TO_FETCH_ERROR_MESSAGE))
 		}
 
+		roleId := &models.RoleById{ID: collab.RoleId.Hex()}
+		role, err := roleService.FetchRoleById(roleId)
+		if err != nil {
+			if err == mongo.ErrNoDocuments {
+				c.Status(http.StatusNotFound)
+				return c.JSON(presenters.ErrorResponse(messages.ROLE_NOT_FOUND_ERROR_MESSAGE))
+			}
+			c.Status(http.StatusInternalServerError)
+			return c.JSON(presenters.ErrorResponse(messages.ROLE_FAIL_TO_FETCH_ERROR_MESSAGE))
+		}
+
 		switch collab.ItemType {
 		case "FLASHCARD":
 			fcId := &models.FlashcardCoverById{ID: collab.ItemID.Hex()}
@@ -147,11 +158,44 @@ func GetCollaboration(collaborationService collaborations.Service, userService u
 			}
 
 			c.Status(http.StatusOK)
-			return c.JSON(presenters.CollaborationFlashcardDetailSuccessResponse(collab, inviter, collaborator, flashcardCvr))
+			return c.JSON(presenters.CollaborationFlashcardDetailSuccessResponse(collab, inviter, collaborator, flashcardCvr, role))
 		default:
 			c.Status(http.StatusBadRequest)
 			return c.JSON(presenters.ErrorResponse(messages.COLLABORATION_ITEM_TYPE_IS_UNKNOWN))
 		}
+	}
+}
+
+// Add updateCollaborationStatus for collaborator so its not also updating role
+func UpdateCollabStatus(service collaborations.Service) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		collabId := &models.CollaborationById{ID: c.Params("collaborationId")}
+		collab, err := service.FetchCollaboration(collabId)
+		if err != nil {
+			if err == mongo.ErrNoDocuments {
+				c.Status(http.StatusNotFound)
+				return c.JSON(presenters.ErrorResponse(messages.COLLABORATION_NOT_FOUND_ERROR_MESSAGE))
+			}
+			c.Status(http.StatusInternalServerError)
+			return c.JSON(presenters.ErrorResponse(messages.COLLABORATION_FAIL_TO_FETCH_ERROR_MESSAGE))
+		}
+
+		statusUpdateBody := &models.CollaborationStatusRequest{}
+		err = c.BodyParser(statusUpdateBody)
+		if err != nil {
+			c.Status(http.StatusBadRequest)
+			return c.JSON(presenters.ErrorResponse(messages.COLLABORATION_BODY_PARSER_ERROR_MESSAGE))
+		}
+
+		collab.Status = statusUpdateBody.Status
+		updatedCollab, err := service.UpdateCollaboration(collab)
+		if err != nil {
+			c.Status(http.StatusInternalServerError)
+			return c.JSON(presenters.ErrorResponse(messages.COLLABORATION_FAIL_TO_UPDATE_ERROR_MESSAGE))
+		}
+
+		c.Status(http.StatusOK)
+		return c.JSON(presenters.CollaborationSuccessResponse(updatedCollab))
 	}
 }
 

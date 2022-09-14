@@ -11,6 +11,7 @@ import (
 	"github.com/thenewsatria/seenaoo-backend/pkg/flashcardhints"
 	"github.com/thenewsatria/seenaoo-backend/pkg/flashcards"
 	"github.com/thenewsatria/seenaoo-backend/pkg/models"
+	"github.com/thenewsatria/seenaoo-backend/pkg/roles"
 	"github.com/thenewsatria/seenaoo-backend/pkg/users"
 	"github.com/thenewsatria/seenaoo-backend/utils"
 	"github.com/thenewsatria/seenaoo-backend/variables/messages"
@@ -271,7 +272,7 @@ func IsAuthorized(serviceName string, service interface{}, parentService interfa
 					if err != nil {
 						if err == mongo.ErrNoDocuments {
 							c.Status(http.StatusNotFound)
-							return c.JSON(presenters.ErrorResponse(messages.COLLABORATION_NOT_FOUND_ERROR_MESSAGE))
+							return c.JSON(presenters.ErrorResponse(messages.AUTH_FLASHCARD_UNAUTHORIZED_ERROR_MESSAGE))
 						}
 						c.Status(http.StatusInternalServerError)
 						return c.JSON(presenters.ErrorResponse(messages.COLLABORATION_FAIL_TO_FETCH_ERROR_MESSAGE))
@@ -284,6 +285,40 @@ func IsAuthorized(serviceName string, service interface{}, parentService interfa
 				}
 				c.Status(http.StatusUnauthorized)
 				return c.JSON(presenters.ErrorResponse(messages.AUTH_FLASHCARD_UNAUTHORIZED_ERROR_MESSAGE))
+			}
+		case "ROLE":
+			roleService := service.(roles.Service)
+			roleSlug := &models.RoleBySlug{Slug: c.Params("roleSlug")}
+			rl, err := roleService.FetchRoleBySlug(roleSlug)
+			if err != nil {
+				if err == mongo.ErrNoDocuments {
+					c.Status(http.StatusNotFound)
+					return c.JSON(presenters.ErrorResponse(messages.ROLE_NOT_FOUND_ERROR_MESSAGE))
+				}
+				c.Status(http.StatusInternalServerError)
+				return c.JSON(presenters.ErrorResponse(messages.ROLE_FAIL_TO_FETCH_ERROR_MESSAGE))
+			}
+
+			if rl.Owner != currentUser.Username {
+				if isCollaboratorAllowed {
+					cItemIdAndCollaborator := &models.CollaborationByItemIdAndCollaborator{ItemID: rl.ID.Hex(), Collaborator: currentUser.Username}
+					isCollaborator, err := collaborationService.CheckIsCollaborator(cItemIdAndCollaborator)
+					if err != nil {
+						if err == mongo.ErrNoDocuments {
+							c.Status(http.StatusNotFound)
+							return c.JSON(presenters.ErrorResponse(messages.AUTH_ROLE_UNAUTHORIZED_ERROR_MESSAGE))
+						}
+						c.Status(http.StatusInternalServerError)
+						return c.JSON(presenters.ErrorResponse(messages.COLLABORATION_FAIL_TO_FETCH_ERROR_MESSAGE))
+					}
+					if !isCollaborator {
+						c.Status(http.StatusUnauthorized)
+						return c.JSON(presenters.ErrorResponse(messages.AUTH_ROLE_UNAUTHORIZED_ERROR_MESSAGE))
+					}
+					return c.Next()
+				}
+				c.Status(http.StatusUnauthorized)
+				return c.JSON(presenters.ErrorResponse(messages.AUTH_ROLE_UNAUTHORIZED_ERROR_MESSAGE))
 			}
 		default:
 			c.Status(http.StatusInternalServerError)
