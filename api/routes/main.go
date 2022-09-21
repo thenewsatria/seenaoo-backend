@@ -65,10 +65,10 @@ func Router(app *fiber.App) {
 		})
 	})
 
-	flashcardRouter(apiV1, flashcardService, flashcardHintService, flashcardCoverService, userService, collaborationService, roleService, permissionService)
-	flashcardHintRouter(apiV1, flashcardHintService, flashcardService, flashcardCoverService, userService, collaborationService, roleService, permissionService)
 	flashcardCoverRouter(apiV1, flashcardCoverService, flashcardService, flashcardHintService, tagService,
 		userService, collaborationService, roleService, permissionService)
+	flashcardRouter(apiV1, flashcardService, flashcardHintService, flashcardCoverService, userService, collaborationService, roleService, permissionService)
+	flashcardHintRouter(apiV1, flashcardHintService, flashcardService, flashcardCoverService, userService, collaborationService, roleService, permissionService)
 	authenticationRouter(apiV1, userService, refreshTokenService)
 	collaborationRouter(apiV1, collaborationService, userService, flashcardCoverService, roleService, permissionService)
 	tagRouter(apiV1, tagService, flashcardCoverService)

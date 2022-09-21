@@ -24,10 +24,10 @@ func flashcardRouter(app fiber.Router, flashcardService flashcards.Service, flas
 	//isLoggedIn + author or collaborators can access
 	flashcardRoutes.Use(middlewares.IsLoggedIn(userService))
 
-	//need to FIX this add flashcard hint authorization
-	flashcardRoutes.Post("/",
+	flashcardRoutes.Post("/add/:flashcardCoverSlug",
+		middlewares.IsAuthorized("FLASHCARD_COVER", flashcardCoverService, nil, true, collaborationService, roleService),
 		middlewares.HavePermit(permissionService, true, "FLASHCARD.ADD_CARD"),
-		handlers.AddFlashcard(flashcardService))
+		handlers.AddFlashcard(flashcardService, flashcardCoverService))
 
 	flashcardRoutes.Use("/:flashcardId",
 		middlewares.IsAuthorized("FLASHCARD", flashcardService, flashcardCoverService, true, collaborationService, roleService))

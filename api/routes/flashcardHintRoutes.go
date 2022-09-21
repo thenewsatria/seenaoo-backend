@@ -16,15 +16,15 @@ import (
 func flashcardHintRouter(app fiber.Router, flashcardHintService flashcardhints.Service, flashcardService flashcards.Service,
 	flashcardCoverService flashcardcovers.Service, userService users.Service, collaborationService collaborations.Service,
 	roleService roles.Service, permissionService permissions.Service) {
-	flashcardHintRoutes := app.Group("/flashcard-hint")
+	flashcardHintRoutes := app.Group("/flashcardhints")
 
 	//isLoggedIn + author or collaborators can access
 	flashcardHintRoutes.Use(middlewares.IsLoggedIn(userService))
 
-	//need to FIX this add flashcard hint authorization
-	flashcardHintRoutes.Post("/",
+	flashcardHintRoutes.Post("/add/:flashcardId",
+		middlewares.IsAuthorized("FLASHCARD", flashcardService, flashcardCoverService, true, collaborationService, roleService),
 		middlewares.HavePermit(permissionService, true, "FLASHCARD.ADD_CARD_HINT"),
-		handlers.AddFlashcardHint(flashcardHintService))
+		handlers.AddFlashcardHint(flashcardHintService, flashcardService))
 
 	flashcardHintRoutes.Use("/:flashcardHintId",
 		middlewares.IsAuthorized("FLASHCARD_HINT", flashcardHintService, flashcardCoverService, true, collaborationService, roleService))

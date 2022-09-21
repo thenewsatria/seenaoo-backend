@@ -18,7 +18,7 @@ func flashcardCoverRouter(app fiber.Router, flashcardCoverService flashcardcover
 	flashcardHintService flashcardhints.Service, tagService tags.Service, userService users.Service,
 	collaborationService collaborations.Service, roleService roles.Service, permissionService permissions.Service) {
 
-	flashcardCoverRoutes := app.Group("/flashcard-cover")
+	flashcardCoverRoutes := app.Group("/flashcardcovers")
 
 	//depends on the privacy setting public, unlisted, private
 	flashcardCoverRoutes.Get("/:flashcardCoverSlug", handlers.GetFlashcardCover(flashcardCoverService, tagService, userService, flashcardService))

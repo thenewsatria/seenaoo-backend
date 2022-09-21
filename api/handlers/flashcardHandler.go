@@ -13,14 +13,21 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func AddFlashcard(service flashcards.Service) fiber.Handler {
+func AddFlashcard(flashcardService flashcards.Service, flashcardCoverService flashcardcovers.Service) fiber.Handler {
 	return func(c *fiber.Ctx) error {
+		fCvrSlug := &models.FlashcardCoverBySlug{Slug: c.Params("flashcardCoverSlug")}
+		fcCvr, err := flashcardCoverService.FetchFlashcardCoverBySlug(fCvrSlug)
+		if err != nil {
+			c.Status(http.StatusNotFound)
+			return c.JSON(presenters.ErrorResponse(messages.FLASHCARD_COVER_NOT_FOUND_ERROR_MESSAGE))
+		}
 		flashcard := &models.Flashcard{}
 		if err := c.BodyParser(flashcard); err != nil {
 			c.Status(http.StatusBadRequest)
 			return c.JSON(presenters.ErrorResponse(messages.FLASHCARD_BODY_PARSER_ERROR_MESSAGE))
 		}
-		result, err := service.InsertFlashcard(flashcard)
+		flashcard.FlashCardCoverId = fcCvr.ID
+		result, err := flashcardService.InsertFlashcard(flashcard)
 		if err != nil {
 			c.Status(http.StatusInternalServerError)
 			return c.JSON(presenters.ErrorResponse(messages.FLASHCARD_FAIL_TO_INSERT_ERROR_MESSAGE))
