@@ -16,20 +16,31 @@ import (
 func flashcardRouter(app fiber.Router, flashcardService flashcards.Service, flashcardHintService flashcardhints.Service,
 	flashcardCoverService flashcardcovers.Service, userService users.Service, collaborationService collaborations.Service,
 	roleService roles.Service, permissionService permissions.Service) {
-	flashcardRoutes := app.Group("/flashcard")
-
-	//depends on the cover privacy setting
-	flashcardRoutes.Get("/:flashcardId", handlers.GetFlashcard(flashcardService, flashcardHintService))
-
-	//isLoggedIn + author or collaborators can access
-	flashcardRoutes.Use(middlewares.IsLoggedIn(userService))
+	flashcardRoutes := app.Group("/flashcards")
 
 	flashcardRoutes.Post("/add/:flashcardCoverSlug",
+		middlewares.IsLoggedIn(userService),
 		middlewares.IsAuthorized("FLASHCARD_COVER", flashcardCoverService, nil, true, collaborationService, roleService),
 		middlewares.HavePermit(permissionService, true, "FLASHCARD.ADD_CARD"),
 		handlers.AddFlashcard(flashcardService, flashcardCoverService))
 
+	flashcardRoutes.Delete("/purge/:flashcardId",
+		middlewares.IsLoggedIn(userService),
+		middlewares.IsAuthorized("FLASHCARD", flashcardService, flashcardCoverService, true, collaborationService, roleService),
+		middlewares.HavePermit(permissionService, true, "FLASHCARD.PURGE_CARD"),
+		handlers.PurgeFlashcard(flashcardService, flashcardHintService))
+
+	flashcardRoutes.Delete("/clear-hints/:flashcardId",
+		middlewares.IsLoggedIn(userService),
+		middlewares.IsAuthorized("FLASHCARD", flashcardService, flashcardCoverService, true, collaborationService, roleService),
+		middlewares.HavePermit(permissionService, true, "FLASHCARD.CLEAR_CARD_HINT"),
+		handlers.DeleteFlashcardHintsByFlashcardId(flashcardHintService, flashcardService))
+
+	//depends on the cover privacy setting
+	flashcardRoutes.Get("/:flashcardId", handlers.GetFlashcard(flashcardService, flashcardHintService))
+
 	flashcardRoutes.Use("/:flashcardId",
+		middlewares.IsLoggedIn(userService),
 		middlewares.IsAuthorized("FLASHCARD", flashcardService, flashcardCoverService, true, collaborationService, roleService))
 
 	flashcardRoutes.Put("/:flashcardId",
@@ -40,12 +51,4 @@ func flashcardRouter(app fiber.Router, flashcardService flashcards.Service, flas
 		middlewares.HavePermit(permissionService, true, "FLASHCARD.DELETE_CARD"),
 		handlers.DeleteFlashcard(flashcardService))
 
-	flashcardRoutes.Delete("/purge/:flashcardId",
-		middlewares.IsAuthorized("FLASHCARD", flashcardService, flashcardCoverService, true, collaborationService, roleService),
-		middlewares.HavePermit(permissionService, true, "FLASHCARD.PURGE_CARD"),
-		handlers.PurgeFlashcard(flashcardService, flashcardHintService))
-
-	flashcardRoutes.Delete("/:flashcardId/delete-all-hints",
-		middlewares.HavePermit(permissionService, true, "FLASHCARD.CLEAR_CARD_HINT"),
-		handlers.DeleteFlashcardHintsByFlashcardId(flashcardHintService, flashcardService))
 }

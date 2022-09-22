@@ -16,7 +16,7 @@ import (
 func flashcardHintRouter(app fiber.Router, flashcardHintService flashcardhints.Service, flashcardService flashcards.Service,
 	flashcardCoverService flashcardcovers.Service, userService users.Service, collaborationService collaborations.Service,
 	roleService roles.Service, permissionService permissions.Service) {
-	flashcardHintRoutes := app.Group("/flashcardhints")
+	flashcardHintRoutes := app.Group("/flashcard-hints")
 
 	//isLoggedIn + author or collaborators can access
 	flashcardHintRoutes.Use(middlewares.IsLoggedIn(userService))
@@ -25,6 +25,11 @@ func flashcardHintRouter(app fiber.Router, flashcardHintService flashcardhints.S
 		middlewares.IsAuthorized("FLASHCARD", flashcardService, flashcardCoverService, true, collaborationService, roleService),
 		middlewares.HavePermit(permissionService, true, "FLASHCARD.ADD_CARD_HINT"),
 		handlers.AddFlashcardHint(flashcardHintService, flashcardService))
+
+	flashcardHintRoutes.Delete("/deletes-by-flashcard-id/:flashcardId",
+		middlewares.IsAuthorized("FLASHCARD", flashcardService, flashcardCoverService, true, collaborationService, roleService),
+		middlewares.HavePermit(permissionService, true, "FLASHCARD.CLEAR_CARD_PERMIT"),
+		handlers.DeleteFlashcardHintsByFlashcardId(flashcardHintService, flashcardService))
 
 	flashcardHintRoutes.Use("/:flashcardHintId",
 		middlewares.IsAuthorized("FLASHCARD_HINT", flashcardHintService, flashcardCoverService, true, collaborationService, roleService))
@@ -37,8 +42,4 @@ func flashcardHintRouter(app fiber.Router, flashcardHintService flashcardhints.S
 		middlewares.HavePermit(permissionService, true, "FLASHCARD.DELETE_CARD_HINT"),
 		handlers.DeleteFlashcardHint(flashcardHintService))
 
-	flashcardHintRoutes.Delete("/deletes-by-flashcard-id/:flashcardId",
-		middlewares.IsAuthorized("FLASHCARD", flashcardHintService, flashcardCoverService, true, collaborationService, roleService),
-		middlewares.HavePermit(permissionService, true, "FLASHCARD.CLEAR_CARD_PERMIT"),
-		handlers.DeleteFlashcardHintsByFlashcardId(flashcardHintService, flashcardService))
 }

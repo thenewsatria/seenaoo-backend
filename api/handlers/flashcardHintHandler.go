@@ -26,6 +26,8 @@ func AddFlashcardHint(flashcardHintService flashcardhints.Service, flashcardServ
 			return c.JSON(presenters.ErrorResponse(messages.FLASHCARD_HINT_BODY_PARSER_ERROR_MESSAGE))
 		}
 		flashcardHint.FlashcardId = fc.ID
+		flashcardHint.FlashcardCoverId = fc.FlashCardCoverId
+
 		result, err := flashcardHintService.InsertFlashcardHint(flashcardHint)
 		if err != nil {
 			c.Status(http.StatusInternalServerError)

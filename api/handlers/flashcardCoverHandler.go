@@ -206,7 +206,7 @@ func DeleteFlashcardCover(flashcardCoverService flashcardcovers.Service) fiber.H
 func PurgeFlashcardCover(flashcardCoverService flashcardcovers.Service, flashcardService flashcards.Service, flashcardHintService flashcardhints.Service) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		//Get Flashcard Cover
-		fcCoverSlug := &models.FlashcardCoverBySlug{Slug: c.Params("flashcardCoverId")}
+		fcCoverSlug := &models.FlashcardCoverBySlug{Slug: c.Params("flashcardCoverSlug")}
 		fcCover, err := flashcardCoverService.FetchFlashcardCoverBySlug(fcCoverSlug)
 		if err != nil {
 			c.Status(http.StatusNotFound)
@@ -238,7 +238,14 @@ func PurgeFlashcardCover(flashcardCoverService flashcardcovers.Service, flashcar
 			return c.JSON(presenters.ErrorResponse(messages.FLASHCARD_FAIL_TO_DELETE_ERROR_MESSAGE))
 		}
 
+		// Delete The flashcard cover
+		deletedFcCover, err := flashcardCoverService.RemoveFlashcardCover(fcCover)
+		if err != nil {
+			c.Status(http.StatusInternalServerError)
+			return c.JSON(presenters.ErrorResponse(messages.FLASHCARD_COVER_FAIL_TO_DELETE_ERROR_MESSAGE))
+		}
+
 		c.Status(http.StatusOK)
-		return c.JSON(presenters.FlashcardCoverSuccessResponse(fcCover))
+		return c.JSON(presenters.FlashcardCoverSuccessResponse(deletedFcCover))
 	}
 }

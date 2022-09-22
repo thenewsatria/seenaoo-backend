@@ -18,19 +18,24 @@ func flashcardCoverRouter(app fiber.Router, flashcardCoverService flashcardcover
 	flashcardHintService flashcardhints.Service, tagService tags.Service, userService users.Service,
 	collaborationService collaborations.Service, roleService roles.Service, permissionService permissions.Service) {
 
-	flashcardCoverRoutes := app.Group("/flashcardcovers")
+	flashcardCoverRoutes := app.Group("/flashcard-covers")
+
+	flashcardCoverRoutes.Post("/",
+		middlewares.IsLoggedIn(userService),
+		handlers.AddFlashcardCover(flashcardCoverService, tagService))
+
+	flashcardCoverRoutes.Delete("/purge/:flashcardCoverSlug",
+		middlewares.IsLoggedIn(userService),
+		middlewares.IsAuthorized("FLASHCARD_COVER", flashcardCoverService, nil, true, collaborationService, roleService),
+		middlewares.HavePermit(permissionService, true, "FLASHCARD.PURGE_FLASHCARD"),
+		handlers.PurgeFlashcardCover(flashcardCoverService, flashcardService, flashcardHintService))
 
 	//depends on the privacy setting public, unlisted, private
 	flashcardCoverRoutes.Get("/:flashcardCoverSlug", handlers.GetFlashcardCover(flashcardCoverService, tagService, userService, flashcardService))
 
-	//isLoggedIn can access
-	flashcardCoverRoutes.Use(middlewares.IsLoggedIn(userService))
-
-	flashcardCoverRoutes.Post("/", handlers.AddFlashcardCover(flashcardCoverService, tagService))
-
 	//isLoggedIn + author or collaborators can access it
-
 	flashcardCoverRoutes.Use("/:flashcardCoverSlug",
+		middlewares.IsLoggedIn(userService),
 		middlewares.IsAuthorized("FLASHCARD_COVER", flashcardCoverService, nil, true, collaborationService, roleService))
 
 	flashcardCoverRoutes.Put("/:flashcardCoverSlug",
@@ -40,9 +45,4 @@ func flashcardCoverRouter(app fiber.Router, flashcardCoverService flashcardcover
 	flashcardCoverRoutes.Delete("/:flashcardCoverSlug",
 		middlewares.HavePermit(permissionService, true, "FLASHCARD.DELETE_FLASHCARD"),
 		handlers.DeleteFlashcardCover(flashcardCoverService))
-
-	flashcardCoverRoutes.Delete("/purge/:flashcardCoverSlug",
-		middlewares.IsAuthorized("FLASHCARD_COVER", flashcardCoverService, nil, true, collaborationService, roleService),
-		middlewares.HavePermit(permissionService, true, "FLASHCARD.PURGE_FLASHCARD"),
-		handlers.PurgeFlashcardCover(flashcardCoverService, flashcardService, flashcardHintService))
 }

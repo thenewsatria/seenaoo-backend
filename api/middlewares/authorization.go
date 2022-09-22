@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -190,6 +191,7 @@ func IsAuthorized(serviceName string, service interface{}, parentService interfa
 			fcCover, err := flashcardCoverService.FetchFlashcardCoverBySlug(flashcardCoverSlug)
 			if err != nil {
 				if err == mongo.ErrNoDocuments {
+					fmt.Print("masuk")
 					c.Status(http.StatusNotFound)
 					return c.JSON(presenters.ErrorResponse(messages.FLASHCARD_COVER_NOT_FOUND_ERROR_MESSAGE))
 				}
