@@ -14,6 +14,8 @@ type Repository interface {
 	CreatePermission(p *models.Permission) (*models.Permission, error)
 	ReadPermissionsByItemCategory(pItemCat *models.PermissionByItemCategory) (*[]models.Permission, error)
 	ReadPermissionById(pId *models.PermissionById) (*models.Permission, error)
+	ReadAllPermissions() (*[]models.Permission, error)
+	ReadPermissionsDistinctItemCategory() (*[]string, error)
 	ReadPermissionByName(pName *models.PermissionByName) (*models.Permission, error)
 	UpdatePermission(p *models.Permission) (*models.Permission, error)
 	DeletePermission(p *models.Permission) (*models.Permission, error)
@@ -65,6 +67,39 @@ func (r *repository) ReadPermissionByName(pName *models.PermissionByName) (*mode
 		return nil, err
 	}
 	return permission, err
+}
+
+func (r *repository) ReadAllPermissions() (*[]models.Permission, error) {
+	var permissions = []models.Permission{}
+	cursor, err := r.Collection.Find(database.GetDBContext(), bson.M{})
+	if err != nil {
+		return nil, err
+	}
+
+	for cursor.Next(database.GetDBContext()) {
+		var permission = &models.Permission{}
+		err := cursor.Decode(permission)
+		if err != nil {
+			return nil, err
+		}
+		permissions = append(permissions, *permission)
+	}
+
+	return &permissions, nil
+}
+
+func (r *repository) ReadPermissionsDistinctItemCategory() (*[]string, error) {
+	uniqueItemCategories := []string{}
+	result, err := r.Collection.Distinct(database.GetDBContext(), "item_category", bson.M{})
+	if err != nil {
+		return nil, err
+	}
+
+	for _, category := range result {
+		itemCat := category.(string)
+		uniqueItemCategories = append(uniqueItemCategories, itemCat)
+	}
+	return &uniqueItemCategories, nil
 }
 
 func (r *repository) ReadPermissionsByItemCategory(pItemCat *models.PermissionByItemCategory) (*[]models.Permission, error) {

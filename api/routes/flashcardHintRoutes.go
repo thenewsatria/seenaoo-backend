@@ -22,17 +22,17 @@ func flashcardHintRouter(app fiber.Router, flashcardHintService flashcardhints.S
 	flashcardHintRoutes.Use(middlewares.IsLoggedIn(userService))
 
 	flashcardHintRoutes.Post("/add/:flashcardId",
-		middlewares.IsAuthorized("FLASHCARD", flashcardService, flashcardCoverService, true, collaborationService, roleService),
+		middlewares.IsAuthorized("FLASHCARD", flashcardService, flashcardCoverService, true, true, collaborationService, roleService),
 		middlewares.HavePermit(permissionService, true, "FLASHCARD.ADD_CARD_HINT"),
 		handlers.AddFlashcardHint(flashcardHintService, flashcardService))
 
 	flashcardHintRoutes.Delete("/deletes-by-flashcard-id/:flashcardId",
-		middlewares.IsAuthorized("FLASHCARD", flashcardService, flashcardCoverService, true, collaborationService, roleService),
+		middlewares.IsAuthorized("FLASHCARD", flashcardService, flashcardCoverService, true, true, collaborationService, roleService),
 		middlewares.HavePermit(permissionService, true, "FLASHCARD.CLEAR_CARD_PERMIT"),
 		handlers.DeleteFlashcardHintsByFlashcardId(flashcardHintService, flashcardService))
 
 	flashcardHintRoutes.Use("/:flashcardHintId",
-		middlewares.IsAuthorized("FLASHCARD_HINT", flashcardHintService, flashcardCoverService, true, collaborationService, roleService))
+		middlewares.IsAuthorized("FLASHCARD_HINT", flashcardHintService, flashcardCoverService, true, true, collaborationService, roleService))
 
 	flashcardHintRoutes.Put("/:flashcardHintId",
 		middlewares.HavePermit(permissionService, true, "FLASHCARD.UPDATE_CARD_HINT"),

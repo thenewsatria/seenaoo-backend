@@ -15,7 +15,7 @@ type FlashcardCover struct {
 	Description string               `bson:"description" json:"description"`
 	Image_path  string               `bson:"image_path" json:"imagePath"`
 	Tags        []primitive.ObjectID `bson:"tags" json:"tags"`
-	Author      string               `bson:"user_id" json:"userId"`
+	Author      string               `bson:"author" json:"author"`
 	CreatedAt   time.Time            `bson:"created_at" json:"createdAt"`
 	UpdatedAt   time.Time            `bson:"updated_at" json:"updatedAt"`
 }
@@ -28,7 +28,7 @@ type FlashcardCoverDetail struct {
 	Image_path  string             `bson:"image_path" json:"imagePath"`
 	Tags        []Tag              `bson:"tags" json:"tags"`
 	Flashcards  []Flashcard        `bson:"flashcards" json:"flashcards"`
-	Author      User               `bson:"user" json:"user"`
+	Author      User               `bson:"author" json:"author"`
 	CreatedAt   time.Time          `bson:"created_at" json:"createdAt"`
 	UpdatedAt   time.Time          `bson:"updated_at" json:"updatedAt"`
 }

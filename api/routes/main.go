@@ -70,8 +70,10 @@ func Router(app *fiber.App) {
 	flashcardRouter(apiV1, flashcardService, flashcardHintService, flashcardCoverService, userService, collaborationService, roleService, permissionService)
 	flashcardHintRouter(apiV1, flashcardHintService, flashcardService, flashcardCoverService, userService, collaborationService, roleService, permissionService)
 	authenticationRouter(apiV1, userService, refreshTokenService)
+	roleRouter(apiV1, roleService, userService, permissionService)
 	collaborationRouter(apiV1, collaborationService, userService, flashcardCoverService, roleService, permissionService)
 	tagRouter(apiV1, tagService, flashcardCoverService)
+	permissionRouter(apiV1, permissionService)
 
 	testing := apiV1.Group("/testing")
 	testing.Get("/", func(c *fiber.Ctx) error {

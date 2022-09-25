@@ -26,7 +26,7 @@ func flashcardCoverRouter(app fiber.Router, flashcardCoverService flashcardcover
 
 	flashcardCoverRoutes.Delete("/purge/:flashcardCoverSlug",
 		middlewares.IsLoggedIn(userService),
-		middlewares.IsAuthorized("FLASHCARD_COVER", flashcardCoverService, nil, true, collaborationService, roleService),
+		middlewares.IsAuthorized("FLASHCARD_COVER", flashcardCoverService, nil, true, true, collaborationService, roleService),
 		middlewares.HavePermit(permissionService, true, "FLASHCARD.PURGE_FLASHCARD"),
 		handlers.PurgeFlashcardCover(flashcardCoverService, flashcardService, flashcardHintService))
 
@@ -36,7 +36,7 @@ func flashcardCoverRouter(app fiber.Router, flashcardCoverService flashcardcover
 	//isLoggedIn + author or collaborators can access it
 	flashcardCoverRoutes.Use("/:flashcardCoverSlug",
 		middlewares.IsLoggedIn(userService),
-		middlewares.IsAuthorized("FLASHCARD_COVER", flashcardCoverService, nil, true, collaborationService, roleService))
+		middlewares.IsAuthorized("FLASHCARD_COVER", flashcardCoverService, nil, true, true, collaborationService, roleService))
 
 	flashcardCoverRoutes.Put("/:flashcardCoverSlug",
 		middlewares.HavePermit(permissionService, true, "FLASHCARD.UPDATE_FLASHCARD"),

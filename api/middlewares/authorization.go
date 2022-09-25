@@ -89,7 +89,7 @@ func TestMW3() fiber.Handler {
 }
 
 func IsAllowedToSendCollaboration(service interface{}, collaborationService collaborations.Service,
-	roleService roles.Service, isCollaboratorAllowed bool) fiber.Handler {
+	roleService roles.Service, isCollaboratorAllowed bool, isAuthorAllowed bool) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		currentUser := c.Locals("currentUser").(*models.User)
 		itemCategory := strings.Split(c.Path(), "/")[4]
@@ -114,14 +114,14 @@ func IsAllowedToSendCollaboration(service interface{}, collaborationService coll
 					if err != nil {
 						if err == mongo.ErrNoDocuments {
 							c.Status(http.StatusNotFound)
-							return c.JSON(presenters.ErrorResponse(messages.AUTH_MAKE_COLLABORATION_FLASHCARD_COVER_ERROR_MESAGE))
+							return c.JSON(presenters.ErrorResponse(messages.AUTH_MAKE_COLLABORATION_ERROR_MESSAGE))
 						}
 						c.Status(http.StatusInternalServerError)
 						return c.JSON(presenters.ErrorResponse(messages.COLLABORATION_FAIL_TO_FETCH_ERROR_MESSAGE))
 					}
 					if !isCollaborator {
 						c.Status(http.StatusUnauthorized)
-						return c.JSON(presenters.ErrorResponse(messages.AUTH_MAKE_COLLABORATION_FLASHCARD_COVER_ERROR_MESAGE))
+						return c.JSON(presenters.ErrorResponse(messages.AUTH_MAKE_COLLABORATION_ERROR_MESSAGE))
 					}
 					collaborator, err := collaborationService.FetchCollaborationByItemIdAndCollaborator(cItemIdAndCollaborator)
 					if err != nil {
@@ -144,7 +144,10 @@ func IsAllowedToSendCollaboration(service interface{}, collaborationService coll
 					return c.Next()
 				}
 				c.Status(http.StatusUnauthorized)
-				return c.JSON(presenters.ErrorResponse(messages.AUTH_MAKE_COLLABORATION_FLASHCARD_COVER_ERROR_MESAGE))
+				return c.JSON(presenters.ErrorResponse(messages.AUTH_MAKE_COLLABORATION_ERROR_MESSAGE))
+			} else if !isAuthorAllowed {
+				c.Status(http.StatusUnauthorized)
+				return c.JSON(presenters.ErrorResponse(messages.AUTH_COLLABORATION_UNAUTHORIZED_ERROR_MESSAGE))
 			}
 		default:
 			c.Status(http.StatusInternalServerError)
@@ -156,7 +159,7 @@ func IsAllowedToSendCollaboration(service interface{}, collaborationService coll
 	}
 }
 
-func IsAuthorized(serviceName string, service interface{}, parentService interface{}, isCollaboratorAllowed bool,
+func IsAuthorized(serviceName string, service interface{}, parentService interface{}, isCollaboratorAllowed bool, isAuthorAllowed bool,
 	collaborationService collaborations.Service, roleService roles.Service) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		currentUser := c.Locals("currentUser").(*models.User)
@@ -182,6 +185,9 @@ func IsAuthorized(serviceName string, service interface{}, parentService interfa
 					}
 					return c.Next()
 				}
+				c.Status(http.StatusUnauthorized)
+				return c.JSON(presenters.ErrorResponse(messages.AUTH_COLLABORATION_UNAUTHORIZED_ERROR_MESSAGE))
+			} else if !isAuthorAllowed {
 				c.Status(http.StatusUnauthorized)
 				return c.JSON(presenters.ErrorResponse(messages.AUTH_COLLABORATION_UNAUTHORIZED_ERROR_MESSAGE))
 			}
@@ -237,6 +243,9 @@ func IsAuthorized(serviceName string, service interface{}, parentService interfa
 				}
 				c.Status(http.StatusUnauthorized)
 				return c.JSON(presenters.ErrorResponse(messages.AUTH_FLASHCARD_COVER_UNATHORIZED_ERROR_MESSAGE))
+			} else if !isAuthorAllowed {
+				c.Status(http.StatusUnauthorized)
+				return c.JSON(presenters.ErrorResponse(messages.AUTH_COLLABORATION_UNAUTHORIZED_ERROR_MESSAGE))
 			}
 
 		case "FLASHCARD_HINT":
@@ -302,6 +311,9 @@ func IsAuthorized(serviceName string, service interface{}, parentService interfa
 				}
 				c.Status(http.StatusUnauthorized)
 				return c.JSON(presenters.ErrorResponse(messages.AUTH_FLASHCARD_HINT_UNATHORIZED_ERROR_MESSAGE))
+			} else if !isAuthorAllowed {
+				c.Status(http.StatusUnauthorized)
+				return c.JSON(presenters.ErrorResponse(messages.AUTH_COLLABORATION_UNAUTHORIZED_ERROR_MESSAGE))
 			}
 		case "FLASHCARD":
 			flashcardService := service.(flashcards.Service)

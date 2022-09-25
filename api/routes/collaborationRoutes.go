@@ -19,20 +19,23 @@ func collaborationRouter(app fiber.Router, collaborationService collaborations.S
 
 	//isLoggedIn + only the author can invite the collaboration invites
 	collaborationRoutes.Post("/flashcard/:itemId",
-		middlewares.IsAllowedToSendCollaboration(flashcardCoverService, collaborationService, roleService, false),
+		middlewares.IsAllowedToSendCollaboration(flashcardCoverService, collaborationService, roleService, false, true),
 		middlewares.HavePermit(permissionService, true, "FLASHCARD.INVITE_COLLABORATOR"),
 		handlers.AddCollaboration(collaborationService, userService, flashcardCoverService))
 
-	//isLoggedIn + only author or invited collabotorator can update the status (SENT, REJECTED, ACCEPTED)
-	collaborationRoutes.Use("/:collaborationId",
-		middlewares.IsAuthorized("COLLABORATION", collaborationService, nil, true, collaborationService, roleService))
+	//isLoggedIn + only author and invited collabotorator can view detail the status (SENT, REJECTED, ACCEPTED)
+	collaborationRoutes.Get("/:collaborationId",
+		middlewares.IsAuthorized("COLLABORATION", collaborationService, nil, true, true, collaborationService, roleService),
+		handlers.GetCollaboration(collaborationService, userService, flashcardCoverService, roleService))
 
-	collaborationRoutes.Get("/:collaborationId", handlers.GetCollaboration(collaborationService, userService, flashcardCoverService, roleService))
-	collaborationRoutes.Patch("/:collaborationId", handlers.UpdateCollabStatus(collaborationService))
+	//isLoggedIn + only invited collabotorator can view detail the status (SENT, REJECTED, ACCEPTED)
+	collaborationRoutes.Patch("/:collaborationId",
+		middlewares.IsAuthorized("COLLABORATION", collaborationService, nil, true, false, collaborationService, roleService),
+		handlers.UpdateCollabStatus(collaborationService))
 
 	//isLoggedIn + only the author can update and delete the collaboration invites=
 	collaborationRoutes.Use("/:collaborationId",
-		middlewares.IsAuthorized("COLLABORATION", collaborationService, nil, false, collaborationService, roleService))
+		middlewares.IsAuthorized("COLLABORATION", collaborationService, nil, false, true, collaborationService, roleService))
 
 	collaborationRoutes.Delete("/:collaborationId",
 		handlers.DeleteCollaboration(collaborationService))

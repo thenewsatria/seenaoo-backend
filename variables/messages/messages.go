@@ -42,7 +42,7 @@ var AUTH_FLASHCARD_COVER_UNATHORIZED_ERROR_MESSAGE = "Unauthorized to access thi
 var AUTH_FLASHCARD_HINT_UNATHORIZED_ERROR_MESSAGE = "Unauthorized to access this flashcard hint route"
 var AUTH_FLASHCARD_UNAUTHORIZED_ERROR_MESSAGE = "Unauthorized to access this flashcard route"
 var AUTH_ROLE_UNAUTHORIZED_ERROR_MESSAGE = "Unauthorized to access this role route"
-var AUTH_MAKE_COLLABORATION_FLASHCARD_COVER_ERROR_MESAGE = "Unauthorized to make collaboration with flashcard that you doesn't own"
+var AUTH_MAKE_COLLABORATION_ERROR_MESSAGE = "Unauthorized to create collaboration"
 var AUTH_DONT_HAVE_SUITABLE_PERMISSION_ERROR_MESSAGE = "You dont have permission to access this resource"
 
 var REFRESH_ACCESS_TOKEN_BODY_PARSER_ERROR_MESSAGE = "Error parsing access token body request"
@@ -84,6 +84,7 @@ var ROLE_NOT_FOUND_ERROR_MESSAGE = "Role with provided slug is not found"
 
 var PERMISSION_FAIL_TO_FETCH_ERROR_MESSAGE = "Failed to fetch permission from database"
 var PERMISSION_NOT_FOUND_ERROR_MESSAGE = "Permission with provided id is not found"
+var PERMISSION_FAIL_TO_FETCH_DISTINCT_ITEM_CATEGORY = "Failed to fetch distinct item category"
 
 var MIDDLEWARE_ISAUTHOR_UNKNOWN_SERVICE_TYPE_ERROR_MESSAGE = "[isAuthor Middleware]: Unknown service type"
 var MIDDLEWARE_ISALLOWEDTOSENDCOLLABORATION_UNKNOWN_ITEM_CATEGORY_ERROR_MESSAGE = "[isAllowedToSendCollaboration Middleware]: Unknown item category"

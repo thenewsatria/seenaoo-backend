@@ -20,19 +20,19 @@ func flashcardRouter(app fiber.Router, flashcardService flashcards.Service, flas
 
 	flashcardRoutes.Post("/add/:flashcardCoverSlug",
 		middlewares.IsLoggedIn(userService),
-		middlewares.IsAuthorized("FLASHCARD_COVER", flashcardCoverService, nil, true, collaborationService, roleService),
+		middlewares.IsAuthorized("FLASHCARD_COVER", flashcardCoverService, nil, true, true, collaborationService, roleService),
 		middlewares.HavePermit(permissionService, true, "FLASHCARD.ADD_CARD"),
 		handlers.AddFlashcard(flashcardService, flashcardCoverService))
 
 	flashcardRoutes.Delete("/purge/:flashcardId",
 		middlewares.IsLoggedIn(userService),
-		middlewares.IsAuthorized("FLASHCARD", flashcardService, flashcardCoverService, true, collaborationService, roleService),
+		middlewares.IsAuthorized("FLASHCARD", flashcardService, flashcardCoverService, true, true, collaborationService, roleService),
 		middlewares.HavePermit(permissionService, true, "FLASHCARD.PURGE_CARD"),
 		handlers.PurgeFlashcard(flashcardService, flashcardHintService))
 
 	flashcardRoutes.Delete("/clear-hints/:flashcardId",
 		middlewares.IsLoggedIn(userService),
-		middlewares.IsAuthorized("FLASHCARD", flashcardService, flashcardCoverService, true, collaborationService, roleService),
+		middlewares.IsAuthorized("FLASHCARD", flashcardService, flashcardCoverService, true, true, collaborationService, roleService),
 		middlewares.HavePermit(permissionService, true, "FLASHCARD.CLEAR_CARD_HINT"),
 		handlers.DeleteFlashcardHintsByFlashcardId(flashcardHintService, flashcardService))
 
@@ -41,7 +41,7 @@ func flashcardRouter(app fiber.Router, flashcardService flashcards.Service, flas
 
 	flashcardRoutes.Use("/:flashcardId",
 		middlewares.IsLoggedIn(userService),
-		middlewares.IsAuthorized("FLASHCARD", flashcardService, flashcardCoverService, true, collaborationService, roleService))
+		middlewares.IsAuthorized("FLASHCARD", flashcardService, flashcardCoverService, true, true, collaborationService, roleService))
 
 	flashcardRoutes.Put("/:flashcardId",
 		middlewares.HavePermit(permissionService, true, "FLASHCARD.UPDATE_CARD"),
