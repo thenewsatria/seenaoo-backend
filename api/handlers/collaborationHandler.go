@@ -218,8 +218,10 @@ func UpdateCollaboration(service collaborations.Service) fiber.Handler {
 			return c.JSON(presenters.ErrorResponse(messages.COLLABORATION_BODY_PARSER_ERROR_MESSAGE))
 		}
 
-		updateBody.ID = collab.ID
-		updatedCollab, err := service.UpdateCollaboration(updateBody)
+		collab.Status = updateBody.Status
+		collab.RoleId = updateBody.RoleId
+
+		updatedCollab, err := service.UpdateCollaboration(collab)
 		if err != nil {
 			c.Status(http.StatusInternalServerError)
 			return c.JSON(presenters.ErrorResponse(messages.COLLABORATION_FAIL_TO_UPDATE_ERROR_MESSAGE))

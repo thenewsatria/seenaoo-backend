@@ -81,6 +81,9 @@ func UpdateFlashcard(flashcardService flashcards.Service) fiber.Handler {
 		}
 
 		updateBody.ID = flashcard.ID
+		updateBody.CreatedAt = flashcard.CreatedAt
+		updateBody.FlashCardCoverId = flashcard.FlashCardCoverId
+
 		updatedFlashcard, err := flashcardService.UpdateFlashcard(updateBody)
 		if err != nil {
 			c.Status(http.StatusInternalServerError)

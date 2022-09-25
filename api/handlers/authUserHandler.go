@@ -80,7 +80,7 @@ func RegisterUser(userService users.Service, refreshTokenService refreshtokens.S
 
 func UserLogin(userService users.Service, refreshTokenService refreshtokens.Service) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		userCredential := &models.Authentication{}
+		userCredential := &models.LoginRequest{}
 		if err := c.BodyParser(userCredential); err != nil {
 			c.Status(http.StatusBadRequest)
 			return c.JSON(presenters.ErrorResponse(messages.AUTH_BODY_PARSER_ERROR_MESSAGE))

@@ -17,12 +17,6 @@ type Role struct {
 	UpdatedAt   time.Time            `bson:"updatedAt" json:"updatedAt"`
 }
 
-type RoleRequest struct {
-	Name        string               `bson:"name" json:"name"`
-	Description string               `bson:"description" json:"description"`
-	Permissions []primitive.ObjectID `bson:"permissions" json:"permissions"`
-}
-
 type RoleById struct {
 	ID string `bson:"_id" json:"id"`
 }

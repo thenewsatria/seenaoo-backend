@@ -59,6 +59,9 @@ func UpdateFlashcardHint(flashcardHintService flashcardhints.Service) fiber.Hand
 		}
 
 		updateBody.ID = flashcardHint.ID
+		updateBody.CreatedAt = flashcardHint.CreatedAt
+		updateBody.FlashcardCoverId = flashcardHint.FlashcardCoverId
+		updateBody.FlashcardId = flashcardHint.FlashcardId
 
 		updatedFlashcardHint, err := flashcardHintService.UpdateFlashcardHint(updateBody)
 		if err != nil {
