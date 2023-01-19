@@ -7,24 +7,24 @@ import (
 )
 
 type Role struct {
-	ID          primitive.ObjectID   `bson:"_id" json:"id"`
-	Owner       string               `bson:"owner" json:"owner"`
-	Name        string               `bson:"name" json:"name"`
-	Slug        string               `bson:"slug" json:"slug"`
-	Description string               `bson:"description" json:"description"`
-	Permissions []primitive.ObjectID `bson:"permissions" json:"permissions"`
-	CreatedAt   time.Time            `bson:"createdAt" json:"createdAt"`
-	UpdatedAt   time.Time            `bson:"updatedAt" json:"updatedAt"`
+	ID          primitive.ObjectID   `bson:"_id" json:"id" validate:"required"`
+	Owner       string               `bson:"owner" json:"owner" validate:"required,lowercase,alphanum,max=25,min=5"`
+	Name        string               `bson:"name" json:"name" validate:"required,max=64,min=5"`
+	Slug        string               `bson:"slug" json:"slug" valodate:"required"`
+	Description string               `bson:"description" json:"description" validate:"omitempty,min=5,max=255"`
+	Permissions []primitive.ObjectID `bson:"permissions" json:"permissions" validate:"required,dive,required"`
+	CreatedAt   time.Time            `bson:"createdAt" json:"createdAt" validate:"required"`
+	UpdatedAt   time.Time            `bson:"updatedAt" json:"updatedAt" validate:"required"`
 }
 
 type RoleById struct {
-	ID string `bson:"_id" json:"id"`
+	ID string `bson:"_id" json:"id" validate:"required"`
 }
 
 type RoleByOwner struct {
-	Owner string `bson:"owner" json:"owner"`
+	Owner string `bson:"owner" json:"owner" validate:"required,lowercase,alphanum,max=25,min=5"`
 }
 
 type RoleBySlug struct {
-	Slug string `bson:"slug" json:"slug"`
+	Slug string `bson:"slug" json:"slug" validate:"required"`
 }

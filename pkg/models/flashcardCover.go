@@ -7,28 +7,28 @@ import (
 )
 
 type FlashcardCover struct {
-	ID          primitive.ObjectID   `bson:"_id" json:"id"`
-	Slug        string               `bson:"slug" json:"slug"`
-	Title       string               `bson:"title" json:"title"`
-	Description string               `bson:"description" json:"description"`
-	Image_path  string               `bson:"image_path" json:"imagePath"`
+	ID          primitive.ObjectID   `bson:"_id" json:"id" validate:"required"`
+	Slug        string               `bson:"slug" json:"slug" validate:"required"`
+	Title       string               `bson:"title" json:"title" validate:"required,min=5,max=128"`
+	Description string               `bson:"description" json:"description" validate:"omitempty,min=5,max=255"`
+	Image_path  string               `bson:"image_path" json:"imagePath" validate:"omitempty,file"`
 	Tags        []primitive.ObjectID `bson:"tags" json:"tags"`
-	Author      string               `bson:"author" json:"author"`
-	CreatedAt   time.Time            `bson:"created_at" json:"createdAt"`
-	UpdatedAt   time.Time            `bson:"updated_at" json:"updatedAt"`
+	Author      string               `bson:"author" json:"author" validate:"required,lowercase,alphanum,max=25,min=5"`
+	CreatedAt   time.Time            `bson:"created_at" json:"createdAt" validate:"required"`
+	UpdatedAt   time.Time            `bson:"updated_at" json:"updatedAt" validate:"required"`
 }
 
 type FlashcardCoverRequest struct {
-	Title       string   `bson:"title" json:"title"`
-	Description string   `bson:"description" json:"description"`
-	Image_path  string   `bson:"image_path" json:"imagePath"`
-	Tags        []string `bson:"tags" json:"tags"`
+	Title       string   `bson:"title" json:"title" validate:"required,min=5,max=128"`
+	Description string   `bson:"description" json:"description" validate:"omitempty,min=5,max=255"`
+	Image_path  string   `bson:"image_path" json:"imagePath" validate:"omitempty,file"`
+	Tags        []string `bson:"tags" json:"tags" validate:"omitempty,dive,omitempty,lowercase,alphanum,max=32"`
 }
 
 type FlashcardCoverBySlug struct {
-	Slug string `bson:"slug" json:"slug"`
+	Slug string `bson:"slug" json:"slug" validate:"required"`
 }
 
 type FlashcardCoverById struct {
-	ID string `bson:"_id" json:"id"`
+	ID string `bson:"_id" json:"id" validate:"required"`
 }

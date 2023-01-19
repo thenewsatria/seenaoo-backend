@@ -3,16 +3,16 @@ package refreshtokens
 import "github.com/thenewsatria/seenaoo-backend/pkg/models"
 
 type Service interface {
-	InsertRefreshToken(refreshToken *models.RefreshToken) (*models.RefreshToken, error)
+	InsertRefreshToken(refreshToken *models.RefreshToken) (*models.RefreshToken, error, bool)
 	FetchRefreshTokenByUsername(refreshTokenUsername *models.RefreshTokenByUsersUsernameRequest) (*models.RefreshToken, error)
-	UpdateRefreshToken(refreshToken *models.RefreshToken) (*models.RefreshToken, error)
+	UpdateRefreshToken(refreshToken *models.RefreshToken) (*models.RefreshToken, error, bool)
 }
 
 type service struct {
 	repository Repository
 }
 
-func (s *service) InsertRefreshToken(refreshToken *models.RefreshToken) (*models.RefreshToken, error) {
+func (s *service) InsertRefreshToken(refreshToken *models.RefreshToken) (*models.RefreshToken, error, bool) {
 	return s.repository.CreateRefreshToken(refreshToken)
 }
 
@@ -20,7 +20,7 @@ func (s *service) FetchRefreshTokenByUsername(refreshTokenUsername *models.Refre
 	return s.repository.ReadRefreshTokenByUsersUsername(refreshTokenUsername)
 }
 
-func (s *service) UpdateRefreshToken(refreshToken *models.RefreshToken) (*models.RefreshToken, error) {
+func (s *service) UpdateRefreshToken(refreshToken *models.RefreshToken) (*models.RefreshToken, error, bool) {
 	return s.repository.UpdateRefreshToken(refreshToken)
 }
 

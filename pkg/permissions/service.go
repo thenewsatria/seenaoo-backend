@@ -3,13 +3,13 @@ package permissions
 import "github.com/thenewsatria/seenaoo-backend/pkg/models"
 
 type Service interface {
-	InsertPermission(permission *models.Permission) (*models.Permission, error)
+	InsertPermission(permission *models.Permission) (*models.Permission, error, bool)
 	FetchPermissionsByItemCategory(permissionItemCategory *models.PermissionByItemCategory) (*[]models.Permission, error)
 	FetchPermissionById(permissionId *models.PermissionById) (*models.Permission, error)
 	FetchAllPermissions() (*[]models.Permission, error)
 	FetchPermissionsDistinctItemCategory() (*[]string, error)
 	FetchPermissionByName(permissionName *models.PermissionByName) (*models.Permission, error)
-	UpdatePermission(permission *models.Permission) (*models.Permission, error)
+	UpdatePermission(permission *models.Permission) (*models.Permission, error, bool)
 	RemovePermission(permission *models.Permission) (*models.Permission, error)
 }
 
@@ -29,7 +29,7 @@ func (s *service) FetchPermissionsByItemCategory(permissionItemCategory *models.
 	return s.repository.ReadPermissionsByItemCategory(permissionItemCategory)
 }
 
-func (s *service) InsertPermission(permission *models.Permission) (*models.Permission, error) {
+func (s *service) InsertPermission(permission *models.Permission) (*models.Permission, error, bool) {
 	return s.repository.CreatePermission(permission)
 }
 
@@ -37,7 +37,7 @@ func (s *service) RemovePermission(permission *models.Permission) (*models.Permi
 	return s.repository.DeletePermission(permission)
 }
 
-func (s *service) UpdatePermission(permission *models.Permission) (*models.Permission, error) {
+func (s *service) UpdatePermission(permission *models.Permission) (*models.Permission, error, bool) {
 	return s.repository.UpdatePermission(permission)
 }
 

@@ -3,11 +3,11 @@ package roles
 import "github.com/thenewsatria/seenaoo-backend/pkg/models"
 
 type Service interface {
-	InsertRole(role *models.Role) (*models.Role, error)
+	InsertRole(role *models.Role) (*models.Role, error, bool)
 	FetchRoleById(roleId *models.RoleById) (*models.Role, error)
 	FetchRoleBySlug(roleSlug *models.RoleBySlug) (*models.Role, error)
 	FetchRolesByOwner(roleOwner *models.RoleByOwner) (*[]models.Role, error)
-	UpdateRole(role *models.Role) (*models.Role, error)
+	UpdateRole(role *models.Role) (*models.Role, error, bool)
 	DeleteRole(role *models.Role) (*models.Role, error)
 }
 
@@ -31,11 +31,11 @@ func (s *service) FetchRolesByOwner(roleOwner *models.RoleByOwner) (*[]models.Ro
 	return s.repository.ReadRolesByOwner(roleOwner)
 }
 
-func (s *service) InsertRole(role *models.Role) (*models.Role, error) {
+func (s *service) InsertRole(role *models.Role) (*models.Role, error, bool) {
 	return s.repository.CreateRole(role)
 }
 
-func (s *service) UpdateRole(role *models.Role) (*models.Role, error) {
+func (s *service) UpdateRole(role *models.Role) (*models.Role, error, bool) {
 	return s.repository.UpdateRole(role)
 }
 

@@ -5,33 +5,39 @@ import (
 
 	"github.com/thenewsatria/seenaoo-backend/database"
 	"github.com/thenewsatria/seenaoo-backend/pkg/models"
+	"github.com/thenewsatria/seenaoo-backend/utils/validator"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type Repository interface {
-	CreateRefreshToken(rt *models.RefreshToken) (*models.RefreshToken, error)
+	CreateRefreshToken(rt *models.RefreshToken) (*models.RefreshToken, error, bool)
 	ReadRefreshTokenByUsersUsername(rtu *models.RefreshTokenByUsersUsernameRequest) (*models.RefreshToken, error)
-	UpdateRefreshToken(rt *models.RefreshToken) (*models.RefreshToken, error)
+	UpdateRefreshToken(rt *models.RefreshToken) (*models.RefreshToken, error, bool)
 }
 
 type repository struct {
 	Collection *mongo.Collection
 }
 
-func (r *repository) CreateRefreshToken(rt *models.RefreshToken) (*models.RefreshToken, error) {
+func (r *repository) CreateRefreshToken(rt *models.RefreshToken) (*models.RefreshToken, error, bool) {
 	rt.ID = primitive.NewObjectID()
 	rt.CreatedAt = time.Now()
 	rt.UpdatedAt = time.Now()
 	rt.IsBlocked = false
 
-	_, err := r.Collection.InsertOne(database.GetDBContext(), rt)
+	err := validator.ValidateStruct(rt)
 	if err != nil {
-		return nil, err
+		return nil, err, true
 	}
 
-	return rt, nil
+	_, err = r.Collection.InsertOne(database.GetDBContext(), rt)
+	if err != nil {
+		return nil, err, false
+	}
+
+	return rt, nil, false
 }
 
 func (r *repository) ReadRefreshTokenByUsersUsername(rtu *models.RefreshTokenByUsersUsernameRequest) (*models.RefreshToken, error) {
@@ -44,13 +50,18 @@ func (r *repository) ReadRefreshTokenByUsersUsername(rtu *models.RefreshTokenByU
 	return refreshToken, nil
 }
 
-func (r *repository) UpdateRefreshToken(rt *models.RefreshToken) (*models.RefreshToken, error) {
+func (r *repository) UpdateRefreshToken(rt *models.RefreshToken) (*models.RefreshToken, error, bool) {
 	rt.UpdatedAt = time.Now()
-	_, err := r.Collection.UpdateOne(database.GetDBContext(), bson.M{"_id": rt.ID}, bson.M{"$set": rt})
+
+	err := validator.ValidateStruct(rt)
 	if err != nil {
-		return nil, err
+		return nil, err, true
 	}
-	return rt, nil
+	_, err = r.Collection.UpdateOne(database.GetDBContext(), bson.M{"_id": rt.ID}, bson.M{"$set": rt})
+	if err != nil {
+		return nil, err, false
+	}
+	return rt, nil, false
 }
 
 func NewRepo(collection *mongo.Collection) Repository {

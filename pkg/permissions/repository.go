@@ -5,19 +5,20 @@ import (
 
 	"github.com/thenewsatria/seenaoo-backend/database"
 	"github.com/thenewsatria/seenaoo-backend/pkg/models"
+	"github.com/thenewsatria/seenaoo-backend/utils/validator"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type Repository interface {
-	CreatePermission(p *models.Permission) (*models.Permission, error)
+	CreatePermission(p *models.Permission) (*models.Permission, error, bool)
 	ReadPermissionsByItemCategory(pItemCat *models.PermissionByItemCategory) (*[]models.Permission, error)
 	ReadPermissionById(pId *models.PermissionById) (*models.Permission, error)
 	ReadAllPermissions() (*[]models.Permission, error)
 	ReadPermissionsDistinctItemCategory() (*[]string, error)
 	ReadPermissionByName(pName *models.PermissionByName) (*models.Permission, error)
-	UpdatePermission(p *models.Permission) (*models.Permission, error)
+	UpdatePermission(p *models.Permission) (*models.Permission, error, bool)
 	DeletePermission(p *models.Permission) (*models.Permission, error)
 }
 
@@ -25,16 +26,21 @@ type repository struct {
 	Collection *mongo.Collection
 }
 
-func (r *repository) CreatePermission(p *models.Permission) (*models.Permission, error) {
+func (r *repository) CreatePermission(p *models.Permission) (*models.Permission, error, bool) {
 	p.ID = primitive.NewObjectID()
 	p.CreatedAt = time.Now()
 	p.UpdatedAt = time.Now()
 
-	_, err := r.Collection.InsertOne(database.GetDBContext(), p)
+	err := validator.ValidateStruct(p)
 	if err != nil {
-		return nil, err
+		return nil, err, true
 	}
-	return p, nil
+
+	_, err = r.Collection.InsertOne(database.GetDBContext(), p)
+	if err != nil {
+		return nil, err, false
+	}
+	return p, nil, false
 }
 
 func (r *repository) DeletePermission(p *models.Permission) (*models.Permission, error) {
@@ -121,14 +127,20 @@ func (r *repository) ReadPermissionsByItemCategory(pItemCat *models.PermissionBy
 	return &permissions, nil
 }
 
-func (r *repository) UpdatePermission(p *models.Permission) (*models.Permission, error) {
+func (r *repository) UpdatePermission(p *models.Permission) (*models.Permission, error, bool) {
 	p.UpdatedAt = time.Now()
-	_, err := r.Collection.UpdateOne(database.GetDBContext(), bson.M{"_id": p.ID}, bson.M{"$set": p})
+
+	err := validator.ValidateStruct(p)
 	if err != nil {
-		return nil, err
+		return nil, err, true
 	}
 
-	return p, nil
+	_, err = r.Collection.UpdateOne(database.GetDBContext(), bson.M{"_id": p.ID}, bson.M{"$set": p})
+	if err != nil {
+		return nil, err, false
+	}
+
+	return p, nil, false
 }
 
 func NewRepo(c *mongo.Collection) Repository {

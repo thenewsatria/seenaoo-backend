@@ -31,7 +31,7 @@ func (r *repository) UpdateCollaboration(cl *models.Collaboration) (*models.Coll
 		return nil, err
 	}
 
-	return cl, err
+	return cl, nil
 }
 
 func (r *repository) DeleteCollaboration(cl *models.Collaboration) (*models.Collaboration, error) {

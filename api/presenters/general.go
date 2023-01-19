@@ -16,6 +16,14 @@ func ErrorResponse(msg string) *fiber.Map {
 	}
 }
 
+func MultipleErrorResponse(messages []string) *fiber.Map {
+	return &fiber.Map{
+		"status": false,
+		"data":   "",
+		"error":  messages,
+	}
+}
+
 func BatchOperationResponse(operationType, itemType string, numberOfItemAffected int64) *fiber.Map {
 	batchOps := &BatchOperation{
 		OperationType:        operationType,

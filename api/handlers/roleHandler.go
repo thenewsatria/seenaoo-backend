@@ -30,8 +30,12 @@ func MakeNewRole(roleService roles.Service) fiber.Handler {
 		roleReq.Owner = currentUser.Username
 		roleReq.Slug = slug
 
-		result, err := roleService.InsertRole(roleReq)
+		result, err, isValidationError := roleService.InsertRole(roleReq)
 		if err != nil {
+			if isValidationError {
+				c.Status(http.StatusBadRequest)
+				return c.JSON(presenters.ErrorResponse(err.Error()))
+			}
 			c.Status(http.StatusInternalServerError)
 			return c.JSON(presenters.ErrorResponse(messages.ROLE_FAIL_TO_INSERT_ERROR_MESSAGE))
 		}
@@ -106,8 +110,12 @@ func UpdateRole(roleService roles.Service) fiber.Handler {
 		updateReq.Slug = newSlug
 		updateReq.CreatedAt = role.CreatedAt
 
-		updatedRole, err := roleService.UpdateRole(updateReq)
+		updatedRole, err, isValidationError := roleService.UpdateRole(updateReq)
 		if err != nil {
+			if isValidationError {
+				c.Status(http.StatusBadRequest)
+				return c.JSON(presenters.ErrorResponse(err.Error()))
+			}
 			c.Status(http.StatusInternalServerError)
 			return c.JSON(presenters.ErrorResponse(messages.ROLE_FAIL_TO_UPDATE_ERROR_MESSAGE))
 		}
