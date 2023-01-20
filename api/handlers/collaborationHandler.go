@@ -42,6 +42,8 @@ func AddCollaboration(collaboratorService collaborations.Service, userService us
 		}
 
 		//Checking ownership of item will be done in middleware
+
+		//Checking item existence to be collaborated
 		switch collaboration.ItemType {
 		case "FLASHCARD":
 			fcCoverId := &models.FlashcardCoverById{ID: c.Params("itemId")}
@@ -70,9 +72,13 @@ func AddCollaboration(collaboratorService collaborations.Service, userService us
 		}
 		existedCollab, err := collaboratorService.FetchCollaborationByItemIdAndCollaborator(cItemIdAndCollaborator)
 		if err != nil {
-			if err == mongo.ErrNoDocuments {
-				createdCollaboration, err := collaboratorService.InsertCollaboration(collaboration)
+			if err == mongo.ErrNoDocuments { //if collaboration doesn't exist create new collaboration
+				createdCollaboration, err, isValidationError := collaboratorService.InsertCollaboration(collaboration)
 				if err != nil {
+					if isValidationError {
+						c.Status(http.StatusBadRequest)
+						return c.JSON(presenters.ErrorResponse(err.Error()))
+					}
 					c.Status(http.StatusInternalServerError)
 					return c.JSON(presenters.ErrorResponse(messages.COLLABORATION_FAIL_TO_INSERT_ERROR_MESSAGE))
 				}
@@ -83,16 +89,21 @@ func AddCollaboration(collaboratorService collaborations.Service, userService us
 			return c.JSON(presenters.ErrorResponse(messages.COLLABORATION_FAIL_TO_FETCH_ERROR_MESSAGE))
 		}
 
-		if existedCollab.Status == "REJECTED" {
+		// if collaboration already existed on between collaborator and itemid then:
+		if existedCollab.Status == "REJECTED" { //if the status is rejected then update to be status to be SENT
 			existedCollab.Status = "SENT"
-			updatedCollab, err := collaboratorService.UpdateCollaboration(existedCollab)
+			updatedCollab, err, isValidationError := collaboratorService.UpdateCollaboration(existedCollab)
 			if err != nil {
+				if isValidationError {
+					c.Status(http.StatusBadRequest)
+					return c.JSON(presenters.ErrorResponse(err.Error()))
+				}
 				c.Status(http.StatusInternalServerError)
 				return c.JSON(presenters.ErrorResponse(messages.COLLABORATION_FAIL_TO_UPDATE_ERROR_MESSAGE))
 			}
 			c.Status(http.StatusOK)
 			return c.JSON(presenters.CollaborationSuccessResponse(updatedCollab))
-		} else {
+		} else { //if the status is SENT or ACCEPTED then send error that the collaboration already existed
 			c.Status(http.StatusBadRequest)
 			return c.JSON(presenters.ErrorResponse(messages.COLLABORATION_ALREADY_EXIST_ERROR_MESSAGE))
 		}
@@ -187,8 +198,12 @@ func UpdateCollabStatus(service collaborations.Service) fiber.Handler {
 		}
 
 		collab.Status = statusUpdateBody.Status
-		updatedCollab, err := service.UpdateCollaboration(collab)
+		updatedCollab, err, isValidationError := service.UpdateCollaboration(collab)
 		if err != nil {
+			if isValidationError {
+				c.Status(http.StatusBadRequest)
+				return c.JSON(presenters.ErrorResponse(err.Error()))
+			}
 			c.Status(http.StatusInternalServerError)
 			return c.JSON(presenters.ErrorResponse(messages.COLLABORATION_FAIL_TO_UPDATE_ERROR_MESSAGE))
 		}
@@ -221,8 +236,12 @@ func UpdateCollaboration(service collaborations.Service) fiber.Handler {
 		collab.Status = updateBody.Status
 		collab.RoleId = updateBody.RoleId
 
-		updatedCollab, err := service.UpdateCollaboration(collab)
+		updatedCollab, err, isValidationError := service.UpdateCollaboration(collab)
 		if err != nil {
+			if isValidationError {
+				c.Status(http.StatusBadRequest)
+				return c.JSON(presenters.ErrorResponse(err.Error()))
+			}
 			c.Status(http.StatusInternalServerError)
 			return c.JSON(presenters.ErrorResponse(messages.COLLABORATION_FAIL_TO_UPDATE_ERROR_MESSAGE))
 		}

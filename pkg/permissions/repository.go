@@ -1,6 +1,7 @@
 package permissions
 
 import (
+	"strings"
 	"time"
 
 	"github.com/thenewsatria/seenaoo-backend/database"
@@ -28,12 +29,17 @@ type repository struct {
 
 func (r *repository) CreatePermission(p *models.Permission) (*models.Permission, error, bool) {
 	p.ID = primitive.NewObjectID()
+	p.Name = strings.ToUpper(p.Name) //merubah menjadi uppercase sebelum validasi
 	p.CreatedAt = time.Now()
 	p.UpdatedAt = time.Now()
 
 	err := validator.ValidateStruct(p)
 	if err != nil {
-		return nil, err, true
+		if validator.IsValidationError(err) {
+			err = validator.TranslateError(err)
+			return nil, err, true
+		}
+		return nil, err, false
 	}
 
 	_, err = r.Collection.InsertOne(database.GetDBContext(), p)
@@ -132,7 +138,11 @@ func (r *repository) UpdatePermission(p *models.Permission) (*models.Permission,
 
 	err := validator.ValidateStruct(p)
 	if err != nil {
-		return nil, err, true
+		if validator.IsValidationError(err) {
+			err = validator.TranslateError(err)
+			return nil, err, true
+		}
+		return nil, err, false
 	}
 
 	_, err = r.Collection.UpdateOne(database.GetDBContext(), bson.M{"_id": p.ID}, bson.M{"$set": p})

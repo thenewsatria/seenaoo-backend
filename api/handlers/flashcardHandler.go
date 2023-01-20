@@ -27,8 +27,12 @@ func AddFlashcard(flashcardService flashcards.Service, flashcardCoverService fla
 			return c.JSON(presenters.ErrorResponse(messages.FLASHCARD_BODY_PARSER_ERROR_MESSAGE))
 		}
 		flashcard.FlashCardCoverId = fcCvr.ID
-		result, err := flashcardService.InsertFlashcard(flashcard)
+		result, err, isValidationError := flashcardService.InsertFlashcard(flashcard)
 		if err != nil {
+			if isValidationError {
+				c.Status(http.StatusBadRequest)
+				return c.JSON(presenters.ErrorResponse(err.Error()))
+			}
 			c.Status(http.StatusInternalServerError)
 			return c.JSON(presenters.ErrorResponse(messages.FLASHCARD_FAIL_TO_INSERT_ERROR_MESSAGE))
 		}
@@ -84,8 +88,12 @@ func UpdateFlashcard(flashcardService flashcards.Service) fiber.Handler {
 		updateBody.CreatedAt = flashcard.CreatedAt
 		updateBody.FlashCardCoverId = flashcard.FlashCardCoverId
 
-		updatedFlashcard, err := flashcardService.UpdateFlashcard(updateBody)
+		updatedFlashcard, err, isValidationError := flashcardService.UpdateFlashcard(updateBody)
 		if err != nil {
+			if isValidationError {
+				c.Status(http.StatusBadRequest)
+				return c.JSON(presenters.ErrorResponse(err.Error()))
+			}
 			c.Status(http.StatusInternalServerError)
 			return c.JSON(presenters.ErrorResponse(messages.FLASHCARD_FAIL_TO_UPDATE_ERROR_MESSAGE))
 		}

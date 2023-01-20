@@ -28,8 +28,12 @@ func AddFlashcardHint(flashcardHintService flashcardhints.Service, flashcardServ
 		flashcardHint.FlashcardId = fc.ID
 		flashcardHint.FlashcardCoverId = fc.FlashCardCoverId
 
-		result, err := flashcardHintService.InsertFlashcardHint(flashcardHint)
+		result, err, isValidationError := flashcardHintService.InsertFlashcardHint(flashcardHint)
 		if err != nil {
+			if isValidationError {
+				c.Status(http.StatusBadRequest)
+				return c.JSON(presenters.ErrorResponse(err.Error()))
+			}
 			c.Status(http.StatusInternalServerError)
 			return c.JSON(presenters.ErrorResponse(messages.FLASHCARD_HINT_FAIL_TO_INSERT_ERROR_MESSAGE))
 		}
@@ -63,8 +67,12 @@ func UpdateFlashcardHint(flashcardHintService flashcardhints.Service) fiber.Hand
 		updateBody.FlashcardCoverId = flashcardHint.FlashcardCoverId
 		updateBody.FlashcardId = flashcardHint.FlashcardId
 
-		updatedFlashcardHint, err := flashcardHintService.UpdateFlashcardHint(updateBody)
+		updatedFlashcardHint, err, isValidationError := flashcardHintService.UpdateFlashcardHint(updateBody)
 		if err != nil {
+			if isValidationError {
+				c.Status(http.StatusBadRequest)
+				return c.JSON((presenters.ErrorResponse(err.Error())))
+			}
 			c.Status(http.StatusInternalServerError)
 			return c.JSON(presenters.ErrorResponse(messages.FLASHCARD_HINT_FAIL_TO_UPDATE_ERROR_MESSAGE))
 		}

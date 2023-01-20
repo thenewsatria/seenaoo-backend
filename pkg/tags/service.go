@@ -3,7 +3,7 @@ package tags
 import "github.com/thenewsatria/seenaoo-backend/pkg/models"
 
 type Service interface {
-	InsertTag(tag *models.Tag) (*models.Tag, error)
+	InsertTag(tag *models.Tag) (*models.Tag, error, bool)
 	FetchTagById(tagId *models.TagById) (*models.Tag, error)
 	FetchTagByName(tagName *models.TagByName) (*models.Tag, error)
 	RemoveTag(tag *models.Tag) (*models.Tag, error)
@@ -13,7 +13,7 @@ type service struct {
 	repository Repository
 }
 
-func (s *service) InsertTag(tag *models.Tag) (*models.Tag, error) {
+func (s *service) InsertTag(tag *models.Tag) (*models.Tag, error, bool) {
 	return s.repository.CreateTag(tag)
 }
 

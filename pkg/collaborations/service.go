@@ -3,9 +3,9 @@ package collaborations
 import "github.com/thenewsatria/seenaoo-backend/pkg/models"
 
 type Service interface {
-	InsertCollaboration(collaboration *models.Collaboration) (*models.Collaboration, error)
+	InsertCollaboration(collaboration *models.Collaboration) (*models.Collaboration, error, bool)
 	FetchCollaboration(collaborationId *models.CollaborationById) (*models.Collaboration, error)
-	UpdateCollaboration(collaboration *models.Collaboration) (*models.Collaboration, error)
+	UpdateCollaboration(collaboration *models.Collaboration) (*models.Collaboration, error, bool)
 	RemoveCollaboration(collaboration *models.Collaboration) (*models.Collaboration, error)
 	CheckIsCollaborator(collaborationItemIdAndCollaborator *models.CollaborationByItemIdAndCollaborator) (bool, error)
 	FetchCollaborationByItemIdAndCollaborator(collaborationItemAndCollaborator *models.CollaborationByItemIdAndCollaborator) (*models.Collaboration, error)
@@ -19,7 +19,7 @@ func (s *service) FetchCollaboration(collaborationId *models.CollaborationById) 
 	return s.repository.ReadCollaboration(collaborationId)
 }
 
-func (s *service) InsertCollaboration(collaboration *models.Collaboration) (*models.Collaboration, error) {
+func (s *service) InsertCollaboration(collaboration *models.Collaboration) (*models.Collaboration, error, bool) {
 	return s.repository.CreateCollaboration(collaboration)
 }
 
@@ -27,7 +27,7 @@ func (s *service) RemoveCollaboration(collaboration *models.Collaboration) (*mod
 	return s.repository.DeleteCollaboration(collaboration)
 }
 
-func (s *service) UpdateCollaboration(collaboration *models.Collaboration) (*models.Collaboration, error) {
+func (s *service) UpdateCollaboration(collaboration *models.Collaboration) (*models.Collaboration, error, bool) {
 	return s.repository.UpdateCollaboration(collaboration)
 }
 

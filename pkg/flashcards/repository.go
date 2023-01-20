@@ -5,16 +5,17 @@ import (
 
 	"github.com/thenewsatria/seenaoo-backend/database"
 	"github.com/thenewsatria/seenaoo-backend/pkg/models"
+	"github.com/thenewsatria/seenaoo-backend/utils/validator"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type Repository interface {
-	CreateFlashcard(f *models.Flashcard) (*models.Flashcard, error)
+	CreateFlashcard(f *models.Flashcard) (*models.Flashcard, error, bool)
 	ReadFlashcard(fId *models.FlashcardByIdRequest) (*models.Flashcard, error)
 	ReadFlashcardsByFlashcardCoverId(fFCoverId *models.FlashcardCoverById) (*[]models.Flashcard, error)
-	UpdateFlashcard(f *models.Flashcard) (*models.Flashcard, error)
+	UpdateFlashcard(f *models.Flashcard) (*models.Flashcard, error, bool)
 	DeleteFlashcard(f *models.Flashcard) (*models.Flashcard, error)
 	DeleteFlashcardsByFlashcardCoverId(fcCoverId *models.FlashcardCoverById) (int64, error)
 }
@@ -23,16 +24,25 @@ type repository struct {
 	Collection *mongo.Collection
 }
 
-func (r *repository) CreateFlashcard(f *models.Flashcard) (*models.Flashcard, error) {
+func (r *repository) CreateFlashcard(f *models.Flashcard) (*models.Flashcard, error, bool) {
 	f.ID = primitive.NewObjectID()
 	f.CreatedAt = time.Now()
 	f.UpdatedAt = time.Now()
 
-	_, err := r.Collection.InsertOne(database.GetDBContext(), f)
+	err := validator.ValidateStruct(f)
 	if err != nil {
-		return nil, err
+		if validator.IsValidationError(err) {
+			err = validator.TranslateError(err)
+			return nil, err, true
+		}
+		return nil, err, false
 	}
-	return f, nil
+
+	_, err = r.Collection.InsertOne(database.GetDBContext(), f)
+	if err != nil {
+		return nil, err, false
+	}
+	return f, nil, false
 }
 
 func (r *repository) ReadFlashcard(fId *models.FlashcardByIdRequest) (*models.Flashcard, error) {
@@ -49,13 +59,23 @@ func (r *repository) ReadFlashcard(fId *models.FlashcardByIdRequest) (*models.Fl
 	return flashcard, nil
 }
 
-func (r *repository) UpdateFlashcard(f *models.Flashcard) (*models.Flashcard, error) {
+func (r *repository) UpdateFlashcard(f *models.Flashcard) (*models.Flashcard, error, bool) {
 	f.UpdatedAt = time.Now()
-	_, err := r.Collection.UpdateOne(database.GetDBContext(), bson.M{"_id": f.ID}, bson.M{"$set": f})
+
+	err := validator.ValidateStruct(f)
 	if err != nil {
-		return nil, err
+		if validator.IsValidationError(err) {
+			err = validator.TranslateError(err)
+			return nil, err, true
+		}
+		return nil, err, false
 	}
-	return f, nil
+
+	_, err = r.Collection.UpdateOne(database.GetDBContext(), bson.M{"_id": f.ID}, bson.M{"$set": f})
+	if err != nil {
+		return nil, err, false
+	}
+	return f, nil, false
 }
 
 func (r *repository) DeleteFlashcard(f *models.Flashcard) (*models.Flashcard, error) {

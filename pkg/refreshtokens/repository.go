@@ -29,7 +29,11 @@ func (r *repository) CreateRefreshToken(rt *models.RefreshToken) (*models.Refres
 
 	err := validator.ValidateStruct(rt)
 	if err != nil {
-		return nil, err, true
+		if validator.IsValidationError(err) {
+			err = validator.TranslateError(err)
+			return nil, err, true
+		}
+		return nil, err, false
 	}
 
 	_, err = r.Collection.InsertOne(database.GetDBContext(), rt)
@@ -55,7 +59,11 @@ func (r *repository) UpdateRefreshToken(rt *models.RefreshToken) (*models.Refres
 
 	err := validator.ValidateStruct(rt)
 	if err != nil {
-		return nil, err, true
+		if validator.IsValidationError(err) {
+			err = validator.TranslateError(err)
+			return nil, err, true
+		}
+		return nil, err, false
 	}
 	_, err = r.Collection.UpdateOne(database.GetDBContext(), bson.M{"_id": rt.ID}, bson.M{"$set": rt})
 	if err != nil {

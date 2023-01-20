@@ -37,8 +37,12 @@ func AddFlashcardCover(flashcardCoverService flashcardcovers.Service, tagService
 			if err != nil {
 				if err == mongo.ErrNoDocuments { //jika tag tidak ada maka buat baru
 					tag := &models.Tag{TagName: tagString}
-					newTag, err := tagService.InsertTag(tag)
+					newTag, err, isValidationError := tagService.InsertTag(tag)
 					if err != nil {
+						if isValidationError {
+							c.Status(http.StatusBadRequest)
+							return c.JSON(presenters.ErrorResponse(err.Error()))
+						}
 						c.Status(http.StatusInternalServerError)
 						return c.JSON(presenters.ErrorResponse(messages.TAG_FAIL_TO_INSERT_ERROR_MESSAGE))
 					}
@@ -62,8 +66,12 @@ func AddFlashcardCover(flashcardCoverService flashcardcovers.Service, tagService
 			Author:      currentUser.Username,
 		}
 
-		insertedFcCover, err := flashcardCoverService.InsertFlashcardCover(fcCover)
+		insertedFcCover, err, isValidationError := flashcardCoverService.InsertFlashcardCover(fcCover)
 		if err != nil {
+			if isValidationError {
+				c.Status(http.StatusBadRequest)
+				return c.JSON(presenters.ErrorResponse(err.Error()))
+			}
 			c.Status(http.StatusInternalServerError)
 			return c.JSON(presenters.ErrorResponse(messages.FLASHCARD_COVER_FAIL_TO_INSERT_ERROR_MESSAGE))
 		}
@@ -157,8 +165,12 @@ func UpdateFlashcardCover(flashcardCoverService flashcardcovers.Service, tagServ
 			if err != nil {
 				if err == mongo.ErrNoDocuments { //jika tag tidak ada maka buat baru
 					tag := &models.Tag{TagName: tagString}
-					newTag, err := tagService.InsertTag(tag)
+					newTag, err, isValidationError := tagService.InsertTag(tag)
 					if err != nil {
+						if isValidationError {
+							c.Status(http.StatusBadRequest)
+							return c.JSON(presenters.ErrorResponse(err.Error()))
+						}
 						c.Status(http.StatusInternalServerError)
 						return c.JSON(presenters.ErrorResponse(messages.TAG_FAIL_TO_INSERT_ERROR_MESSAGE))
 					}
@@ -172,8 +184,12 @@ func UpdateFlashcardCover(flashcardCoverService flashcardcovers.Service, tagServ
 		}
 
 		fcCover.Tags = tagIds
-		updatedFcCover, err := flashcardCoverService.UpdateFlashcardCover(fcCover)
+		updatedFcCover, err, isValidationError := flashcardCoverService.UpdateFlashcardCover(fcCover)
 		if err != nil {
+			if isValidationError {
+				c.Status(http.StatusBadRequest)
+				return c.JSON(presenters.ErrorResponse(err.Error()))
+			}
 			c.Status(http.StatusInternalServerError)
 			return c.JSON(presenters.ErrorResponse(messages.FLASHCARD_COVER_FAIL_TO_UPDATE_ERROR_MESSAGE))
 		}

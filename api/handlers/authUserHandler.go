@@ -54,8 +54,12 @@ func RegisterUser(userService users.Service, refreshTokenService refreshtokens.S
 			return c.JSON(presenters.ErrorResponse(messages.AUTH_FAIL_TO_GENERATE_REFRESH_TOKEN_ERROR_MESSAGE))
 		}
 
-		_, err = userService.InsertUser(user)
+		_, err, isValidationError := userService.InsertUser(user)
 		if err != nil {
+			if isValidationError {
+				c.Status(http.StatusBadRequest)
+				return c.JSON(presenters.ErrorResponse(err.Error()))
+			}
 			c.Status(http.StatusInternalServerError)
 			return c.JSON(presenters.ErrorResponse(messages.USER_FAIL_TO_INSERT_ERROR_MESSAGE))
 		}
@@ -67,8 +71,12 @@ func RegisterUser(userService users.Service, refreshTokenService refreshtokens.S
 			ClientIP:     c.IP(),
 		}
 
-		_, err, _ = refreshTokenService.InsertRefreshToken(refreshToken)
+		_, err, isValidationError = refreshTokenService.InsertRefreshToken(refreshToken)
 		if err != nil {
+			if isValidationError {
+				c.Status(http.StatusBadRequest)
+				return c.JSON(presenters.ErrorResponse(err.Error()))
+			}
 			c.Status(http.StatusInternalServerError)
 			return c.JSON(presenters.ErrorResponse(messages.REFRESH_TOKEN_FAIL_TO_INSERT_ERROR_MESSAGE))
 		}
@@ -143,8 +151,12 @@ func UserLogin(userService users.Service, refreshTokenService refreshtokens.Serv
 		userRefToken.ClientIP = c.IP()
 		userRefToken.UserAgent = string(c.Context().UserAgent())
 
-		updatedToken, err, _ := refreshTokenService.UpdateRefreshToken(userRefToken)
+		updatedToken, err, isValidationError := refreshTokenService.UpdateRefreshToken(userRefToken)
 		if err != nil {
+			if isValidationError {
+				c.Status(http.StatusBadRequest)
+				return c.JSON(presenters.ErrorResponse(err.Error()))
+			}
 			c.Status(http.StatusInternalServerError)
 			return c.JSON(presenters.ErrorResponse(messages.REFRESH_TOKEN_FAIL_TO_FETCH_ERROR_MESSAGE))
 		}
@@ -174,8 +186,12 @@ func UserLogout(refreshTokenService refreshtokens.Service) fiber.Handler {
 		userRefToken.ClientIP = c.IP()
 		userRefToken.UserAgent = string(c.Context().UserAgent())
 
-		_, err, _ = refreshTokenService.UpdateRefreshToken(userRefToken)
+		_, err, isValidationError := refreshTokenService.UpdateRefreshToken(userRefToken)
 		if err != nil {
+			if isValidationError {
+				c.Status(http.StatusBadRequest)
+				return c.JSON(presenters.ErrorResponse(err.Error()))
+			}
 			c.Status(http.StatusInternalServerError)
 			return c.JSON(presenters.ErrorResponse(messages.REFRESH_TOKEN_FAIL_TO_FETCH_ERROR_MESSAGE))
 		}
@@ -256,8 +272,12 @@ func RefreshToken(refreshTokenService refreshtokens.Service, userService users.S
 		refTok.ClientIP = c.IP()
 		refTok.UserAgent = string(c.Context().UserAgent())
 
-		updatedToken, err, _ := refreshTokenService.UpdateRefreshToken(refTok)
+		updatedToken, err, isValidationError := refreshTokenService.UpdateRefreshToken(refTok)
 		if err != nil {
+			if isValidationError {
+				c.Status(http.StatusBadRequest)
+				return c.JSON(presenters.ErrorResponse(err.Error()))
+			}
 			c.Status(http.StatusInternalServerError)
 			return c.JSON(presenters.ErrorResponse(messages.REFRESH_TOKEN_FAIL_TO_UPDATE_STORED_TOKEN_ERROR_MESSAGE))
 		}

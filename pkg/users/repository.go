@@ -5,13 +5,14 @@ import (
 
 	"github.com/thenewsatria/seenaoo-backend/database"
 	"github.com/thenewsatria/seenaoo-backend/pkg/models"
+	"github.com/thenewsatria/seenaoo-backend/utils/validator"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type Repository interface {
-	CreateUser(u *models.User) (*models.User, error)
+	CreateUser(u *models.User) (*models.User, error, bool)
 	ReadUserByEmail(uEmail *models.UserByEmailRequest) (*models.User, error)
 	ReadUserByUsername(uUname *models.UserByUsernameRequest) (*models.User, error)
 }
@@ -20,18 +21,26 @@ type repository struct {
 	Collection *mongo.Collection
 }
 
-func (r *repository) CreateUser(u *models.User) (*models.User, error) {
+func (r *repository) CreateUser(u *models.User) (*models.User, error, bool) {
 	u.ID = primitive.NewObjectID()
 	u.IsVerified = false
 	u.CreatedAt = time.Now()
 	u.UpdatedAt = time.Now()
 
-	_, err := r.Collection.InsertOne(database.GetDBContext(), u)
+	err := validator.ValidateStruct(u)
 	if err != nil {
-		return nil, err
+		if validator.IsValidationError(err) {
+			err = validator.TranslateError(err)
+			return nil, err, true
+		}
+		return nil, err, false
+	}
+	_, err = r.Collection.InsertOne(database.GetDBContext(), u)
+	if err != nil {
+		return nil, err, false
 	}
 
-	return u, nil
+	return u, nil, false
 }
 
 func (r *repository) ReadUserByEmail(uEmail *models.UserByEmailRequest) (*models.User, error) {

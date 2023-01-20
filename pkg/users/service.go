@@ -3,7 +3,7 @@ package users
 import "github.com/thenewsatria/seenaoo-backend/pkg/models"
 
 type Service interface {
-	InsertUser(user *models.User) (*models.User, error)
+	InsertUser(user *models.User) (*models.User, error, bool)
 	CheckEmailIsExist(userEmail *models.UserByEmailRequest) bool
 	CheckUsernameIsExist(userUsername *models.UserByUsernameRequest) bool
 	FetchUserByEmail(userEmail *models.UserByEmailRequest) (*models.User, error)
@@ -14,7 +14,7 @@ type service struct {
 	repository Repository
 }
 
-func (s *service) InsertUser(user *models.User) (*models.User, error) {
+func (s *service) InsertUser(user *models.User) (*models.User, error, bool) {
 	return s.repository.CreateUser(user)
 }
 

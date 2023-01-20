@@ -5,16 +5,17 @@ import (
 
 	"github.com/thenewsatria/seenaoo-backend/database"
 	"github.com/thenewsatria/seenaoo-backend/pkg/models"
+	"github.com/thenewsatria/seenaoo-backend/utils/validator"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type Repository interface {
-	CreateFlashcardCover(fcCover *models.FlashcardCover) (*models.FlashcardCover, error)
+	CreateFlashcardCover(fcCover *models.FlashcardCover) (*models.FlashcardCover, error, bool)
 	ReadFlashcardCoverBySlug(fcCoverSlug *models.FlashcardCoverBySlug) (*models.FlashcardCover, error)
 	ReadFlashcardCoverById(fcCoverId *models.FlashcardCoverById) (*models.FlashcardCover, error)
-	UpdateFlashcardCover(fcCover *models.FlashcardCover) (*models.FlashcardCover, error)
+	UpdateFlashcardCover(fcCover *models.FlashcardCover) (*models.FlashcardCover, error, bool)
 	DeleteFlashcardCover(fcCover *models.FlashcardCover) (*models.FlashcardCover, error)
 	ReadFlashcardCoversByTagId(tId *models.TagById) (*[]models.FlashcardCover, error)
 }
@@ -23,17 +24,26 @@ type repository struct {
 	Collection *mongo.Collection
 }
 
-func (r *repository) CreateFlashcardCover(fcCover *models.FlashcardCover) (*models.FlashcardCover, error) {
+func (r *repository) CreateFlashcardCover(fcCover *models.FlashcardCover) (*models.FlashcardCover, error, bool) {
 	fcCover.ID = primitive.NewObjectID()
 	fcCover.CreatedAt = time.Now()
 	fcCover.UpdatedAt = time.Now()
 
-	_, err := r.Collection.InsertOne(database.GetDBContext(), fcCover)
+	err := validator.ValidateStruct(fcCover)
 	if err != nil {
-		return nil, err
+		if validator.IsValidationError(err) {
+			err = validator.TranslateError(err)
+			return nil, err, true
+		}
+		return nil, err, false
 	}
 
-	return fcCover, nil
+	_, err = r.Collection.InsertOne(database.GetDBContext(), fcCover)
+	if err != nil {
+		return nil, err, false
+	}
+
+	return fcCover, nil, false
 }
 
 func (r *repository) DeleteFlashcardCover(fcCover *models.FlashcardCover) (*models.FlashcardCover, error) {
@@ -70,14 +80,24 @@ func (r *repository) ReadFlashcardCoverBySlug(fcCoverSlug *models.FlashcardCover
 	return fcCover, nil
 }
 
-func (r *repository) UpdateFlashcardCover(fcCover *models.FlashcardCover) (*models.FlashcardCover, error) {
+func (r *repository) UpdateFlashcardCover(fcCover *models.FlashcardCover) (*models.FlashcardCover, error, bool) {
 	fcCover.UpdatedAt = time.Now()
-	_, err := r.Collection.UpdateOne(database.GetDBContext(), bson.M{"_id": fcCover.ID}, bson.M{"$set": fcCover})
+
+	err := validator.ValidateStruct(fcCover)
 	if err != nil {
-		return nil, err
+		if validator.IsValidationError(err) {
+			err = validator.TranslateError(err)
+			return nil, err, true
+		}
+		return nil, err, false
 	}
 
-	return fcCover, nil
+	_, err = r.Collection.UpdateOne(database.GetDBContext(), bson.M{"_id": fcCover.ID}, bson.M{"$set": fcCover})
+	if err != nil {
+		return nil, err, false
+	}
+
+	return fcCover, nil, false
 }
 
 func (r *repository) ReadFlashcardCoversByTagId(tId *models.TagById) (*[]models.FlashcardCover, error) {

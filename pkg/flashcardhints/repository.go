@@ -5,16 +5,17 @@ import (
 
 	"github.com/thenewsatria/seenaoo-backend/database"
 	"github.com/thenewsatria/seenaoo-backend/pkg/models"
+	"github.com/thenewsatria/seenaoo-backend/utils/validator"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type Repository interface {
-	CreateFlashcardHint(fh *models.FlashcardHint) (*models.FlashcardHint, error)
+	CreateFlashcardHint(fh *models.FlashcardHint) (*models.FlashcardHint, error, bool)
 	ReadFlashcardHint(fhId *models.FlashcardHintByIdRequest) (*models.FlashcardHint, error)
 	ReadFlashcardHintsByFlashcardId(fId *models.FlashcardByIdRequest) (*[]models.FlashcardHint, error)
-	UpdateFlashcardHint(fh *models.FlashcardHint) (*models.FlashcardHint, error)
+	UpdateFlashcardHint(fh *models.FlashcardHint) (*models.FlashcardHint, error, bool)
 	DeleteFlashcardHint(fh *models.FlashcardHint) (*models.FlashcardHint, error)
 	DeleteFlashcardHintsByFlashcardId(fId *models.FlashcardByIdRequest) (int64, error)
 }
@@ -29,17 +30,26 @@ func NewRepo(collection *mongo.Collection) Repository {
 	}
 }
 
-func (r *repository) CreateFlashcardHint(fh *models.FlashcardHint) (*models.FlashcardHint, error) {
+func (r *repository) CreateFlashcardHint(fh *models.FlashcardHint) (*models.FlashcardHint, error, bool) {
 	fh.ID = primitive.NewObjectID()
 	fh.CreatedAt = time.Now()
 	fh.UpdatedAt = time.Now()
 
-	_, err := r.Collection.InsertOne(database.GetDBContext(), fh)
+	err := validator.ValidateStruct(fh)
 	if err != nil {
-		return nil, err
+		if validator.IsValidationError(err) {
+			err = validator.TranslateError(err)
+			return nil, err, true
+		}
+		return nil, err, false
 	}
 
-	return fh, nil
+	_, err = r.Collection.InsertOne(database.GetDBContext(), fh)
+	if err != nil {
+		return nil, err, false
+	}
+
+	return fh, nil, false
 }
 
 func (r *repository) ReadFlashcardHint(fhId *models.FlashcardHintByIdRequest) (*models.FlashcardHint, error) {
@@ -80,14 +90,24 @@ func (r *repository) ReadFlashcardHintsByFlashcardId(fId *models.FlashcardByIdRe
 	return &hints, nil
 }
 
-func (r *repository) UpdateFlashcardHint(fh *models.FlashcardHint) (*models.FlashcardHint, error) {
+func (r *repository) UpdateFlashcardHint(fh *models.FlashcardHint) (*models.FlashcardHint, error, bool) {
 	fh.UpdatedAt = time.Now()
-	_, err := r.Collection.UpdateOne(database.GetDBContext(), bson.M{"_id": fh.ID}, bson.M{"$set": fh})
+
+	err := validator.ValidateStruct(fh)
 	if err != nil {
-		return nil, err
+		if validator.IsValidationError(err) {
+			err = validator.TranslateError(err)
+			return nil, err, true
+		}
+		return nil, err, false
 	}
 
-	return fh, nil
+	_, err = r.Collection.UpdateOne(database.GetDBContext(), bson.M{"_id": fh.ID}, bson.M{"$set": fh})
+	if err != nil {
+		return nil, err, false
+	}
+
+	return fh, nil, false
 }
 
 func (r *repository) DeleteFlashcardHint(fh *models.FlashcardHint) (*models.FlashcardHint, error) {

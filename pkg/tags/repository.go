@@ -1,17 +1,19 @@
 package tags
 
 import (
+	"strings"
 	"time"
 
 	"github.com/thenewsatria/seenaoo-backend/database"
 	"github.com/thenewsatria/seenaoo-backend/pkg/models"
+	"github.com/thenewsatria/seenaoo-backend/utils/validator"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type Repository interface {
-	CreateTag(t *models.Tag) (*models.Tag, error)
+	CreateTag(t *models.Tag) (*models.Tag, error, bool)
 	ReadTagById(tId *models.TagById) (*models.Tag, error)
 	ReadTagByTagName(tName *models.TagByName) (*models.Tag, error)
 	DeleteTag(t *models.Tag) (*models.Tag, error)
@@ -21,17 +23,27 @@ type repository struct {
 	Collection *mongo.Collection
 }
 
-func (r *repository) CreateTag(t *models.Tag) (*models.Tag, error) {
+func (r *repository) CreateTag(t *models.Tag) (*models.Tag, error, bool) {
 	t.ID = primitive.NewObjectID()
+	t.TagName = strings.ToLower(t.TagName) //mengecilkan seluruh huruf sebelum dilakukan validasi
 	t.CreatedAt = time.Now()
 	t.UpdatedAt = time.Now()
 
-	_, err := r.Collection.InsertOne(database.GetDBContext(), t)
+	err := validator.ValidateStruct(t)
 	if err != nil {
-		return nil, err
+		if validator.IsValidationError(err) {
+			err = validator.TranslateError(err)
+			return nil, err, true
+		}
+		return nil, err, false
 	}
 
-	return t, nil
+	_, err = r.Collection.InsertOne(database.GetDBContext(), t)
+	if err != nil {
+		return nil, err, false
+	}
+
+	return t, nil, false
 }
 
 func (r *repository) ReadTagById(tId *models.TagById) (*models.Tag, error) {

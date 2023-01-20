@@ -100,7 +100,11 @@ func (r *repository) UpdateRole(rl *models.Role) (*models.Role, error, bool) {
 
 	err := validator.ValidateStruct(rl)
 	if err != nil {
-		return nil, err, true
+		if validator.IsValidationError(err) {
+			err = validator.TranslateError(err)
+			return nil, err, true
+		}
+		return nil, err, false
 	}
 	_, err = r.Collection.UpdateOne(database.GetDBContext(), bson.M{"_id": rl.ID}, bson.M{"$set": rl})
 	if err != nil {

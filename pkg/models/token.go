@@ -12,7 +12,7 @@ type RefreshToken struct {
 	RefreshToken string             `bson:"refresh_token" json:"refreshToken" validate:"required"`
 	UserAgent    string             `bson:"user_agent" json:"userAgent" validate:"required"`
 	ClientIP     string             `bson:"client_ip" json:"clientIP" validate:"required,ip"`
-	IsBlocked    bool               `bson:"is_blocked" json:"isBlocked"`
+	IsBlocked    bool               `bson:"is_blocked" json:"isBlocked" validate:"required,boolean"`
 	CreatedAt    time.Time          `bson:"created_at" json:"createdAt" validate:"required"`
 	UpdatedAt    time.Time          `bson:"updated_at" json:"updatedAt" validate:"required"`
 }

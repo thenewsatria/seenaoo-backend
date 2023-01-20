@@ -3,9 +3,9 @@ package flashcards
 import "github.com/thenewsatria/seenaoo-backend/pkg/models"
 
 type Service interface {
-	InsertFlashcard(flashcard *models.Flashcard) (*models.Flashcard, error)
+	InsertFlashcard(flashcard *models.Flashcard) (*models.Flashcard, error, bool)
 	FetchFlashcard(flashcardId *models.FlashcardByIdRequest) (*models.Flashcard, error)
-	UpdateFlashcard(f *models.Flashcard) (*models.Flashcard, error)
+	UpdateFlashcard(f *models.Flashcard) (*models.Flashcard, error, bool)
 	RemoveFlashcard(flashcard *models.Flashcard) (*models.Flashcard, error)
 	PopulateFlashcardCover(flashcardCoverId *models.FlashcardCoverById) (*[]models.Flashcard, error)
 	RemoveFlashcardsByFlashcardCoverId(flashcardCoverId *models.FlashcardCoverById) (int64, error)
@@ -16,7 +16,7 @@ type service struct {
 }
 
 // InsertFlashcard implements Service
-func (s *service) InsertFlashcard(flashcard *models.Flashcard) (*models.Flashcard, error) {
+func (s *service) InsertFlashcard(flashcard *models.Flashcard) (*models.Flashcard, error, bool) {
 	return s.repository.CreateFlashcard(flashcard)
 }
 
@@ -24,7 +24,7 @@ func (s *service) FetchFlashcard(flashcardId *models.FlashcardByIdRequest) (*mod
 	return s.repository.ReadFlashcard(flashcardId)
 }
 
-func (s *service) UpdateFlashcard(flashcard *models.Flashcard) (*models.Flashcard, error) {
+func (s *service) UpdateFlashcard(flashcard *models.Flashcard) (*models.Flashcard, error, bool) {
 	return s.repository.UpdateFlashcard(flashcard)
 }
 

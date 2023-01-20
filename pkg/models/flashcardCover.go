@@ -10,7 +10,7 @@ type FlashcardCover struct {
 	ID          primitive.ObjectID   `bson:"_id" json:"id" validate:"required"`
 	Slug        string               `bson:"slug" json:"slug" validate:"required"`
 	Title       string               `bson:"title" json:"title" validate:"required,min=5,max=128"`
-	Description string               `bson:"description" json:"description" validate:"omitempty,min=5,max=255"`
+	Description string               `bson:"description" json:"description" validate:"min=5,max=255"`
 	Image_path  string               `bson:"image_path" json:"imagePath" validate:"omitempty,file"`
 	Tags        []primitive.ObjectID `bson:"tags" json:"tags"`
 	Author      string               `bson:"author" json:"author" validate:"required,lowercase,alphanum,max=25,min=5"`
