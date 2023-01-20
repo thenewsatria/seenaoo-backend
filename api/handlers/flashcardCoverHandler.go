@@ -61,7 +61,7 @@ func AddFlashcardCover(flashcardCoverService flashcardcovers.Service, tagService
 			Slug:        slug.Make(fcCoverRequest.Title) + "-" + currentTimeStr,
 			Title:       fcCoverRequest.Title,
 			Description: fcCoverRequest.Description,
-			Image_path:  fcCoverRequest.Image_path,
+			ImagePath:   fcCoverRequest.ImagePath,
 			Tags:        tagIds,
 			Author:      currentUser.Username,
 		}
@@ -155,7 +155,7 @@ func UpdateFlashcardCover(flashcardCoverService flashcardcovers.Service, tagServ
 		fcCover.Slug = newSlug
 		fcCover.Title = updateBody.Title
 		fcCover.Description = updateBody.Description
-		fcCover.Image_path = updateBody.Image_path
+		fcCover.ImagePath = updateBody.ImagePath
 
 		tagIds := []primitive.ObjectID{}
 

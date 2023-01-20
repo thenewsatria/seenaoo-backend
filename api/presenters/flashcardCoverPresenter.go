@@ -13,7 +13,7 @@ type FlashcardCover struct {
 	Slug        string               `bson:"slug" json:"slug"`
 	Title       string               `bson:"title" json:"title"`
 	Description string               `bson:"description" json:"description"`
-	Image_path  string               `bson:"image_path" json:"imagePath"`
+	ImagePath   string               `bson:"image_path" json:"imagePath"`
 	Tags        []primitive.ObjectID `bson:"tags" json:"tags"`
 	Author      string               `bson:"author" json:"author"`
 	CreatedAt   time.Time            `bson:"created_at" json:"createdAt"`
@@ -25,7 +25,7 @@ type FlashcardCoverDetail struct {
 	Slug        string             `bson:"slug" json:"slug"`
 	Title       string             `bson:"title" json:"title"`
 	Description string             `bson:"description" json:"description"`
-	Image_path  string             `bson:"image_path" json:"imagePath"`
+	ImagePath   string             `bson:"image_path" json:"imagePath"`
 	Tags        []Tag              `bson:"tags" json:"tags"`
 	Flashcards  []Flashcard        `bson:"flashcards" json:"flashcards"`
 	Author      User               `bson:"author" json:"author"`
@@ -39,7 +39,7 @@ func FlashcardCoverSuccessResponse(fcCover *models.FlashcardCover) *fiber.Map {
 		Slug:        fcCover.Slug,
 		Title:       fcCover.Title,
 		Description: fcCover.Description,
-		Image_path:  fcCover.Image_path,
+		ImagePath:   fcCover.ImagePath,
 		Tags:        fcCover.Tags,
 		Author:      fcCover.Author,
 		CreatedAt:   fcCover.CreatedAt,
@@ -66,7 +66,7 @@ func FlashcardCoverDetailSuccessResponse(fcCover *models.FlashcardCover, tags *[
 		Slug:        fcCover.Slug,
 		Title:       fcCover.Title,
 		Description: fcCover.Description,
-		Image_path:  fcCover.Image_path,
+		ImagePath:   fcCover.ImagePath,
 		Tags:        []Tag{},
 		Flashcards:  []Flashcard{},
 		Author:      *owner,

@@ -44,7 +44,7 @@ func TagDetailSuccessResponse(t *models.Tag, fcs *[]models.FlashcardCover) *fibe
 			Slug:        fc.Slug,
 			Title:       fc.Title,
 			Description: fc.Description,
-			Image_path:  fc.Image_path,
+			ImagePath:   fc.ImagePath,
 			Tags:        fc.Tags,
 			Author:      fc.Author,
 			CreatedAt:   fc.CreatedAt,

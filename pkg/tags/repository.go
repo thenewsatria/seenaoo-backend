@@ -62,7 +62,8 @@ func (r *repository) ReadTagById(tId *models.TagById) (*models.Tag, error) {
 
 func (r *repository) ReadTagByTagName(tName *models.TagByName) (*models.Tag, error) {
 	tag := &models.Tag{}
-	err := r.Collection.FindOne(database.GetDBContext(), bson.D{{Key: "tag_name", Value: tName.TagName}}).Decode(tag)
+	tagName := strings.ToLower(tName.TagName)
+	err := r.Collection.FindOne(database.GetDBContext(), bson.D{{Key: "tag_name", Value: tagName}}).Decode(tag)
 	if err != nil {
 		return nil, err
 	}

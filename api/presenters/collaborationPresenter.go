@@ -74,7 +74,7 @@ func CollaborationFlashcardDetailSuccessResponse(collaboration *models.Collabora
 		Slug:        flashcardCover.Slug,
 		Title:       flashcardCover.Title,
 		Description: flashcardCover.Description,
-		Image_path:  flashcardCover.Image_path,
+		ImagePath:   flashcardCover.ImagePath,
 		Tags:        flashcardCover.Tags,
 		Author:      flashcardCover.Author,
 		CreatedAt:   flashcardCover.CreatedAt,

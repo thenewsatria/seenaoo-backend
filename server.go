@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
@@ -21,10 +22,11 @@ func main() {
 	seeds.SeedPermissionsCollection()
 
 	app := fiber.New()
+	port := os.Getenv("PORT")
 
 	routes.Router(app)
 
-	app.Listen(":3000")
+	app.Listen(":" + port)
 
 	defer database.DisconnectDB()
 	defer database.CancelDBContext()
