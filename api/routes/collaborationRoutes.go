@@ -8,11 +8,13 @@ import (
 	"github.com/thenewsatria/seenaoo-backend/pkg/flashcardcovers"
 	"github.com/thenewsatria/seenaoo-backend/pkg/permissions"
 	"github.com/thenewsatria/seenaoo-backend/pkg/roles"
+	"github.com/thenewsatria/seenaoo-backend/pkg/userprofiles"
 	"github.com/thenewsatria/seenaoo-backend/pkg/users"
 )
 
 func collaborationRouter(app fiber.Router, collaborationService collaborations.Service, userService users.Service,
-	flashcardCoverService flashcardcovers.Service, roleService roles.Service, permissionService permissions.Service) {
+	userProfileService userprofiles.Service, flashcardCoverService flashcardcovers.Service, roleService roles.Service,
+	permissionService permissions.Service) {
 	collaborationRoutes := app.Group("/collaboration")
 
 	collaborationRoutes.Use(middlewares.IsLoggedIn(userService))
@@ -26,7 +28,7 @@ func collaborationRouter(app fiber.Router, collaborationService collaborations.S
 	//isLoggedIn + only author and invited collabotorator can view detail the status (SENT, REJECTED, ACCEPTED)
 	collaborationRoutes.Get("/:collaborationId",
 		middlewares.IsAuthorized("COLLABORATION", collaborationService, nil, true, true, collaborationService, roleService),
-		handlers.GetCollaboration(collaborationService, userService, flashcardCoverService, roleService))
+		handlers.GetCollaboration(collaborationService, userService, userProfileService, flashcardCoverService, roleService))
 
 	//isLoggedIn + only invited collabotorator can view detail the status (SENT, REJECTED, ACCEPTED)
 	collaborationRoutes.Patch("/:collaborationId",

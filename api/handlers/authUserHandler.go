@@ -7,6 +7,7 @@ import (
 	"github.com/thenewsatria/seenaoo-backend/api/presenters"
 	"github.com/thenewsatria/seenaoo-backend/pkg/models"
 	"github.com/thenewsatria/seenaoo-backend/pkg/refreshtokens"
+	"github.com/thenewsatria/seenaoo-backend/pkg/userprofiles"
 	"github.com/thenewsatria/seenaoo-backend/pkg/users"
 	"github.com/thenewsatria/seenaoo-backend/utils"
 	"github.com/thenewsatria/seenaoo-backend/utils/validator"
@@ -14,7 +15,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func RegisterUser(userService users.Service, refreshTokenService refreshtokens.Service) fiber.Handler {
+func RegisterUser(userService users.Service, refreshTokenService refreshtokens.Service, userProfileService userprofiles.Service) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		user := &models.User{}
 		if err := c.BodyParser(user); err != nil {
@@ -64,6 +65,26 @@ func RegisterUser(userService users.Service, refreshTokenService refreshtokens.S
 			return c.JSON(presenters.ErrorResponse(messages.USER_FAIL_TO_INSERT_ERROR_MESSAGE))
 		}
 
+		userProfile := &models.UserProfile{
+			DisplayName:     user.Username,
+			AvatarImagePath: "http://localhost:3000/api/v1/static/defaults/default-avatar.png", //default image
+			BannerImagePath: "http://localhost:3000/api/v1/static/defaults/default-banner.jpg",
+			Owner:           user.Username,
+		}
+
+		_, err, isValidationError = userProfileService.InsertProfile(userProfile)
+		if err != nil {
+
+			//TODO: jika error delete user
+
+			if isValidationError {
+				c.Status(http.StatusBadRequest)
+				return c.JSON(presenters.ErrorResponse(err.Error()))
+			}
+			c.Status(http.StatusInternalServerError)
+			return c.JSON(presenters.ErrorResponse(messages.USER_PROFILE_FAIL_TO_INSERT_ERROR_MESSAGE))
+		}
+
 		refreshToken := &models.RefreshToken{
 			Username:     user.Username,
 			RefreshToken: refreshTokenStr,
@@ -73,6 +94,9 @@ func RegisterUser(userService users.Service, refreshTokenService refreshtokens.S
 
 		_, err, isValidationError = refreshTokenService.InsertRefreshToken(refreshToken)
 		if err != nil {
+
+			//TODO: jika error delete user dan profile
+
 			if isValidationError {
 				c.Status(http.StatusBadRequest)
 				return c.JSON(presenters.ErrorResponse(err.Error()))

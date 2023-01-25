@@ -5,14 +5,16 @@ import (
 	"github.com/thenewsatria/seenaoo-backend/api/handlers"
 	"github.com/thenewsatria/seenaoo-backend/api/middlewares"
 	"github.com/thenewsatria/seenaoo-backend/pkg/refreshtokens"
+	"github.com/thenewsatria/seenaoo-backend/pkg/userprofiles"
 	"github.com/thenewsatria/seenaoo-backend/pkg/users"
 )
 
-func authenticationRouter(app fiber.Router, userService users.Service, refreshTokenService refreshtokens.Service) {
+func authenticationRouter(app fiber.Router, userService users.Service, refreshTokenService refreshtokens.Service,
+	userProfileService userprofiles.Service) {
 	authRoutes := app.Group("/auth")
 
 	authRoutes.Post("/login", handlers.UserLogin(userService, refreshTokenService))
-	authRoutes.Post("/register", handlers.RegisterUser(userService, refreshTokenService))
+	authRoutes.Post("/register", handlers.RegisterUser(userService, refreshTokenService, userProfileService))
 	authRoutes.Post("/token", handlers.RefreshToken(refreshTokenService, userService))
 
 	authRoutes.Use(middlewares.IsLoggedIn(userService))

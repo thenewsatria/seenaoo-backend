@@ -15,6 +15,8 @@ import (
 	"github.com/thenewsatria/seenaoo-backend/pkg/refreshtokens"
 	"github.com/thenewsatria/seenaoo-backend/pkg/roles"
 	"github.com/thenewsatria/seenaoo-backend/pkg/tags"
+	"github.com/thenewsatria/seenaoo-backend/pkg/tests"
+	"github.com/thenewsatria/seenaoo-backend/pkg/userprofiles"
 	"github.com/thenewsatria/seenaoo-backend/pkg/users"
 )
 
@@ -30,6 +32,10 @@ func Router(app *fiber.App) {
 	var userCollection = database.UseDB().Collection(users.CollectionName)
 	var userRepo = users.NewRepo(userCollection)
 	var userService = users.NewService(userRepo)
+
+	var userProfileCollection = database.UseDB().Collection(userprofiles.CollectionName)
+	var userProfileRepo = userprofiles.NewRepo(userProfileCollection)
+	var userProfileService = userprofiles.NewService(userProfileRepo)
 
 	var refreshTokenCollection = database.UseDB().Collection(refreshtokens.CollectionName)
 	var refreshTokenRepo = refreshtokens.NewRepo(refreshTokenCollection)
@@ -55,6 +61,10 @@ func Router(app *fiber.App) {
 	var permissionRepo = permissions.NewRepo(permissionCollection)
 	var permissionService = permissions.NewService(permissionRepo)
 
+	var testCollection = database.UseDB().Collection(tests.CollectionName)
+	var testRepo = tests.NewRepo(testCollection)
+	var testService = tests.NewService(testRepo)
+
 	api := app.Group("/api")
 	apiV1 := api.Group("/v1")
 
@@ -65,15 +75,23 @@ func Router(app *fiber.App) {
 		})
 	})
 
+	apiV1.Static("/static", "./public")
+
 	flashcardCoverRouter(apiV1, flashcardCoverService, flashcardService, flashcardHintService, tagService,
+		userService, userProfileService, collaborationService, roleService, permissionService)
+	flashcardRouter(apiV1, flashcardService, flashcardHintService, flashcardCoverService,
 		userService, collaborationService, roleService, permissionService)
-	flashcardRouter(apiV1, flashcardService, flashcardHintService, flashcardCoverService, userService, collaborationService, roleService, permissionService)
-	flashcardHintRouter(apiV1, flashcardHintService, flashcardService, flashcardCoverService, userService, collaborationService, roleService, permissionService)
-	authenticationRouter(apiV1, userService, refreshTokenService)
+	flashcardHintRouter(apiV1, flashcardHintService, flashcardService, flashcardCoverService,
+		userService, collaborationService, roleService, permissionService)
+	authenticationRouter(apiV1, userService, refreshTokenService, userProfileService)
 	roleRouter(apiV1, roleService, userService, permissionService)
-	collaborationRouter(apiV1, collaborationService, userService, flashcardCoverService, roleService, permissionService)
+	collaborationRouter(apiV1, collaborationService, userService, userProfileService,
+		flashcardCoverService, roleService, permissionService)
 	tagRouter(apiV1, tagService, flashcardCoverService)
 	permissionRouter(apiV1, permissionService)
+	testRouter(apiV1, testService)
+
+	userRouter(apiV1, userProfileService, userService)
 
 	testing := apiV1.Group("/testing")
 	testing.Get("/", func(c *fiber.Ctx) error {

@@ -1,24 +1,47 @@
 package presenters
 
+import (
+	"github.com/gofiber/fiber/v2"
+	"github.com/thenewsatria/seenaoo-backend/pkg/models"
+)
+
 type User struct {
-	Username        string `bson:"username" json:"username"`
-	DisplayName     string `bson:"display_name" json:"displayName"`
-	AvatarImagePath string `bson:"avatar_image_path" json:"avatarImagePath"`
-	Biography       string `bson:"biography" json:"biography"`
-	IsVerified      bool   `bson:"is_verified" json:"isVerified"`
+	Username string `bson:"username" json:"username"`
 }
 
-// func UserInsertSuccessResponse(u *models.User) *fiber.Map {
-// 	user := &User{
-// 		Username:        u.Username,
-// 		DisplayName:     u.DisplayName,
-// 		AvatarImagePath: u.AvatarImagePath,
-// 		Biography:       u.Biography,
-// 		IsVerified:      u.IsVerified,
-// 	}
-// 	return &fiber.Map{
-// 		"status": true,
-// 		"data":   user,
-// 		"error":  nil,
-// 	}
-// }
+type UserDetail struct {
+	Username string      `bson:"username" json:"username"`
+	Profile  UserProfile `bson:"profile" json:"profile"`
+}
+
+func UserDetailSuccessResponse(u *models.User, p *models.UserProfile) *fiber.Map {
+	userProfile := &UserProfile{
+		DisplayName:     p.DisplayName,
+		AvatarImagePath: p.AvatarImagePath,
+		BannerImagePath: p.BannerImagePath,
+		Biography:       p.Biography,
+		IsVerified:      p.IsVerified,
+	}
+
+	userDetail := &UserDetail{
+		Username: u.Username,
+		Profile:  *userProfile,
+	}
+
+	return &fiber.Map{
+		"status": true,
+		"data":   userDetail,
+		"error":  nil,
+	}
+}
+
+func UserInsertSuccessResponse(u *models.User) *fiber.Map {
+	user := &User{
+		Username: u.Username,
+	}
+	return &fiber.Map{
+		"status": true,
+		"data":   user,
+		"error":  nil,
+	}
+}

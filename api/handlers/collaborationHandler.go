@@ -9,6 +9,7 @@ import (
 	"github.com/thenewsatria/seenaoo-backend/pkg/flashcardcovers"
 	"github.com/thenewsatria/seenaoo-backend/pkg/models"
 	"github.com/thenewsatria/seenaoo-backend/pkg/roles"
+	"github.com/thenewsatria/seenaoo-backend/pkg/userprofiles"
 	"github.com/thenewsatria/seenaoo-backend/pkg/users"
 	"github.com/thenewsatria/seenaoo-backend/variables/messages"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -111,7 +112,9 @@ func AddCollaboration(collaboratorService collaborations.Service, userService us
 }
 
 func GetCollaboration(collaborationService collaborations.Service, userService users.Service,
-	flashcardCoverService flashcardcovers.Service, roleService roles.Service) fiber.Handler {
+	userProfileService userprofiles.Service, flashcardCoverService flashcardcovers.Service,
+	roleService roles.Service) fiber.Handler {
+
 	return func(c *fiber.Ctx) error {
 		collabId := &models.CollaborationById{
 			ID: c.Params("collaborationId"),
@@ -137,6 +140,17 @@ func GetCollaboration(collaborationService collaborations.Service, userService u
 			return c.JSON(presenters.ErrorResponse(messages.USER_FAIL_TO_FETCH_ERROR_MESSAGE))
 		}
 
+		invProfileOwner := &models.UserProfileByOwner{Owner: collab.Inviter}
+		inviterProfile, err := userProfileService.FetchProfileByOwner(invProfileOwner)
+		if err != nil {
+			if err == mongo.ErrNoDocuments {
+				c.Status(http.StatusNotFound)
+				return c.JSON(presenters.ErrorResponse(messages.USER_PROFILE_NOT_FOUND_ERROR_MESSAGE))
+			}
+			c.Status(http.StatusInternalServerError)
+			return c.JSON(presenters.ErrorResponse(messages.USER_PROFILE_FAIL_TO_FETCH_ERROR_MESSAGE))
+		}
+
 		cbtrUsername := &models.UserByUsernameRequest{Username: collab.Collaborator}
 		collaborator, err := userService.FetchUserByUsername(cbtrUsername)
 		if err != nil {
@@ -146,6 +160,17 @@ func GetCollaboration(collaborationService collaborations.Service, userService u
 			}
 			c.Status(http.StatusInternalServerError)
 			return c.JSON(presenters.ErrorResponse(messages.USER_FAIL_TO_FETCH_ERROR_MESSAGE))
+		}
+
+		clbProfileOwner := &models.UserProfileByOwner{Owner: collab.Collaborator}
+		collaboratorProfile, err := userProfileService.FetchProfileByOwner(clbProfileOwner)
+		if err != nil {
+			if err == mongo.ErrNoDocuments {
+				c.Status(http.StatusNotFound)
+				return c.JSON(presenters.ErrorResponse(messages.USER_PROFILE_NOT_FOUND_ERROR_MESSAGE))
+			}
+			c.Status(http.StatusInternalServerError)
+			return c.JSON(presenters.ErrorResponse(messages.USER_PROFILE_FAIL_TO_FETCH_ERROR_MESSAGE))
 		}
 
 		roleId := &models.RoleById{ID: collab.RoleId.Hex()}
@@ -169,7 +194,8 @@ func GetCollaboration(collaborationService collaborations.Service, userService u
 			}
 
 			c.Status(http.StatusOK)
-			return c.JSON(presenters.CollaborationFlashcardDetailSuccessResponse(collab, inviter, collaborator, flashcardCvr, role))
+			return c.JSON(presenters.CollaborationFlashcardDetailSuccessResponse(collab, inviter,
+				collaborator, inviterProfile, collaboratorProfile, flashcardCvr, role))
 		default:
 			c.Status(http.StatusBadRequest)
 			return c.JSON(presenters.ErrorResponse(messages.COLLABORATION_ITEM_TYPE_IS_UNKNOWN))

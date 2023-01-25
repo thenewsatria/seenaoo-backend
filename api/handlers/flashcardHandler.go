@@ -142,6 +142,14 @@ func DeleteFlashcardsByFlashcardCoverId(flashcardService flashcards.Service, fla
 
 		fcCvrId := &models.FlashcardCoverById{ID: fcCvr.ID.Hex()}
 		deletedCount, err := flashcardService.RemoveFlashcardsByFlashcardCoverId(fcCvrId)
+		if err != nil {
+			if deletedCount == -1 {
+				c.Status(http.StatusNotFound)
+				return c.JSON(presenters.ErrorResponse(messages.FLASHCARD_FAIL_TO_DELETE_ERROR_MESSAGE))
+			}
+			c.Status(http.StatusInternalServerError)
+			return c.JSON(presenters.ErrorResponse(messages.FLASHCARD_FAIL_TO_DELETE_ERROR_MESSAGE))
+		}
 
 		c.Status(http.StatusOK)
 		return c.JSON(presenters.BatchOperationResponse("DELETE", "FLASHCARD_COVER", deletedCount))

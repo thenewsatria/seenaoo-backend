@@ -11,12 +11,14 @@ import (
 	"github.com/thenewsatria/seenaoo-backend/pkg/permissions"
 	"github.com/thenewsatria/seenaoo-backend/pkg/roles"
 	"github.com/thenewsatria/seenaoo-backend/pkg/tags"
+	"github.com/thenewsatria/seenaoo-backend/pkg/userprofiles"
 	"github.com/thenewsatria/seenaoo-backend/pkg/users"
 )
 
 func flashcardCoverRouter(app fiber.Router, flashcardCoverService flashcardcovers.Service, flashcardService flashcards.Service,
 	flashcardHintService flashcardhints.Service, tagService tags.Service, userService users.Service,
-	collaborationService collaborations.Service, roleService roles.Service, permissionService permissions.Service) {
+	userProfileService userprofiles.Service, collaborationService collaborations.Service, roleService roles.Service,
+	permissionService permissions.Service) {
 
 	flashcardCoverRoutes := app.Group("/flashcard-covers")
 
@@ -31,7 +33,8 @@ func flashcardCoverRouter(app fiber.Router, flashcardCoverService flashcardcover
 		handlers.PurgeFlashcardCover(flashcardCoverService, flashcardService, flashcardHintService))
 
 	//depends on the privacy setting public, unlisted, private
-	flashcardCoverRoutes.Get("/:flashcardCoverSlug", handlers.GetFlashcardCover(flashcardCoverService, tagService, userService, flashcardService))
+	flashcardCoverRoutes.Get("/:flashcardCoverSlug", handlers.GetFlashcardCover(flashcardCoverService, tagService,
+		userService, userProfileService, flashcardService))
 
 	//isLoggedIn + author or collaborators can access it
 	flashcardCoverRoutes.Use("/:flashcardCoverSlug",

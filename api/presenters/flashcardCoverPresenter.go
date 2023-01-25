@@ -28,7 +28,7 @@ type FlashcardCoverDetail struct {
 	ImagePath   string             `bson:"image_path" json:"imagePath"`
 	Tags        []Tag              `bson:"tags" json:"tags"`
 	Flashcards  []Flashcard        `bson:"flashcards" json:"flashcards"`
-	Author      User               `bson:"author" json:"author"`
+	Author      UserDetail         `bson:"author" json:"author"`
 	CreatedAt   time.Time          `bson:"created_at" json:"createdAt"`
 	UpdatedAt   time.Time          `bson:"updated_at" json:"updatedAt"`
 }
@@ -52,13 +52,24 @@ func FlashcardCoverSuccessResponse(fcCover *models.FlashcardCover) *fiber.Map {
 	}
 }
 
-func FlashcardCoverDetailSuccessResponse(fcCover *models.FlashcardCover, tags *[]models.Tag, flashcards *[]models.Flashcard, author *models.User) *fiber.Map {
-	owner := &User{
-		Username:        author.Username,
-		DisplayName:     author.DisplayName,
-		AvatarImagePath: author.AvatarImagePath,
-		Biography:       author.Biography,
-		IsVerified:      author.IsVerified,
+func FlashcardCoverDetailSuccessResponse(fcCover *models.FlashcardCover, tags *[]models.Tag,
+	flashcards *[]models.Flashcard, author *models.User, authorProfile *models.UserProfile) *fiber.Map {
+
+	userProfile := &UserProfile{
+		DisplayName:     authorProfile.DisplayName,
+		AvatarImagePath: authorProfile.AvatarImagePath,
+		BannerImagePath: authorProfile.BannerImagePath,
+		Biography:       authorProfile.Biography,
+		IsVerified:      authorProfile.IsVerified,
+	}
+
+	owner := &UserDetail{
+		Username: author.Username,
+		Profile:  *userProfile,
+		// DisplayName:     author.DisplayName,
+		// AvatarImagePath: author.AvatarImagePath,
+		// Biography:       author.Biography,
+		// IsVerified:      author.IsVerified,
 	}
 
 	flashcardCvrDetail := &FlashcardCoverDetail{

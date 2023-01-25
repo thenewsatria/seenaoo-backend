@@ -50,11 +50,11 @@ func RoleSuccessResponse(r *models.Role) *fiber.Map {
 
 func RoleDetailSuccessResponse(r *models.Role, u *models.User, p *[]models.Permission) *fiber.Map {
 	usr := &User{
-		Username:        u.Username,
-		DisplayName:     u.DisplayName,
-		AvatarImagePath: u.AvatarImagePath,
-		Biography:       u.Biography,
-		IsVerified:      u.IsVerified,
+		Username: u.Username,
+		// DisplayName:     u.DisplayName,
+		// AvatarImagePath: u.AvatarImagePath,
+		// Biography:       u.Biography,
+		// IsVerified:      u.IsVerified,
 	}
 	roleDetail := &RoleDetail{
 		ID:          r.ID,

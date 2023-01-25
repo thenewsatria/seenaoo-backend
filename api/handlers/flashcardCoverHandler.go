@@ -13,6 +13,7 @@ import (
 	"github.com/thenewsatria/seenaoo-backend/pkg/flashcards"
 	"github.com/thenewsatria/seenaoo-backend/pkg/models"
 	"github.com/thenewsatria/seenaoo-backend/pkg/tags"
+	"github.com/thenewsatria/seenaoo-backend/pkg/userprofiles"
 	"github.com/thenewsatria/seenaoo-backend/pkg/users"
 	"github.com/thenewsatria/seenaoo-backend/variables/messages"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -80,7 +81,9 @@ func AddFlashcardCover(flashcardCoverService flashcardcovers.Service, tagService
 	}
 }
 
-func GetFlashcardCover(flashcardCoverService flashcardcovers.Service, tagService tags.Service, userService users.Service, flashcardService flashcards.Service) fiber.Handler {
+func GetFlashcardCover(flashcardCoverService flashcardcovers.Service, tagService tags.Service,
+	userService users.Service, userProfileService userprofiles.Service, flashcardService flashcards.Service) fiber.Handler {
+
 	return func(c *fiber.Ctx) error {
 		fcCoverSlug := &models.FlashcardCoverBySlug{Slug: c.Params("flashcardCoverSlug")}
 		fcCover, err := flashcardCoverService.FetchFlashcardCoverBySlug(fcCoverSlug)
@@ -127,8 +130,19 @@ func GetFlashcardCover(flashcardCoverService flashcardcovers.Service, tagService
 			return c.JSON(presenters.ErrorResponse(messages.FLASHCARD_COVER_FAIL_TO_POPULATE_FLASHCARDS_ERROR_MESSAGE))
 		}
 
+		upOwner := &models.UserProfileByOwner{Owner: author.Username}
+		userProfile, err := userProfileService.FetchProfileByOwner(upOwner)
+		if err != nil {
+			if err == mongo.ErrNoDocuments {
+				c.Status(http.StatusNotFound)
+				return c.JSON(presenters.ErrorResponse(messages.USER_PROFILE_NOT_FOUND_ERROR_MESSAGE))
+			}
+			c.Status(http.StatusInternalServerError)
+			return c.JSON(presenters.ErrorResponse(messages.USER_PROFILE_FAIL_TO_FETCH_ERROR_MESSAGE))
+		}
+
 		c.Status(http.StatusOK)
-		return c.JSON(presenters.FlashcardCoverDetailSuccessResponse(fcCover, &tagDetails, flashcards, author))
+		return c.JSON(presenters.FlashcardCoverDetailSuccessResponse(fcCover, &tagDetails, flashcards, author, userProfile))
 	}
 }
 

@@ -23,7 +23,6 @@ type repository struct {
 
 func (r *repository) CreateUser(u *models.User) (*models.User, error, bool) {
 	u.ID = primitive.NewObjectID()
-	u.IsVerified = false
 	u.CreatedAt = time.Now()
 	u.UpdatedAt = time.Now()
 

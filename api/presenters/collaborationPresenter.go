@@ -22,8 +22,8 @@ type Collaboration struct {
 
 type CollaborationFlashcardCoverDetail struct {
 	ID           primitive.ObjectID `bson:"_id" json:"id"`
-	Inviter      User               `bson:"inviter" json:"inviter"`
-	Collaborator User               `bson:"collaborator" json:"collaborator"`
+	Inviter      UserDetail         `bson:"inviter" json:"inviter"`
+	Collaborator UserDetail         `bson:"collaborator" json:"collaborator"`
 	Item         FlashcardCover     `bson:"item" json:"item"`
 	ItemType     string             `bson:"item_type" json:"itemType"`
 	Status       string             `bson:"status" json:"status"`
@@ -52,21 +52,33 @@ func CollaborationSuccessResponse(collaboration *models.Collaboration) *fiber.Ma
 }
 
 func CollaborationFlashcardDetailSuccessResponse(collaboration *models.Collaboration, inviter *models.User,
-	collaborator *models.User, flashcardCover *models.FlashcardCover, r *models.Role) *fiber.Map {
-	invUser := &User{
-		Username:        inviter.Username,
-		DisplayName:     inviter.DisplayName,
-		AvatarImagePath: inviter.AvatarImagePath,
-		Biography:       inviter.Biography,
-		IsVerified:      inviter.IsVerified,
+	collaborator *models.User, inviterProfile *models.UserProfile, collaboratorProfile *models.UserProfile,
+	flashcardCover *models.FlashcardCover, r *models.Role) *fiber.Map {
+
+	invUserProfile := &UserProfile{
+		DisplayName:     inviterProfile.DisplayName,
+		AvatarImagePath: inviterProfile.AvatarImagePath,
+		BannerImagePath: inviterProfile.BannerImagePath,
+		Biography:       inviterProfile.Biography,
+		IsVerified:      inviterProfile.IsVerified,
 	}
 
-	collabUser := &User{
-		Username:        collaborator.Username,
-		DisplayName:     collaborator.DisplayName,
-		AvatarImagePath: collaborator.AvatarImagePath,
-		Biography:       collaborator.Biography,
-		IsVerified:      collaborator.IsVerified,
+	invUser := &UserDetail{
+		Username: inviter.Username,
+		Profile:  *invUserProfile,
+	}
+
+	collabUserProfile := &UserProfile{
+		DisplayName:     collaboratorProfile.DisplayName,
+		AvatarImagePath: collaboratorProfile.AvatarImagePath,
+		BannerImagePath: collaboratorProfile.BannerImagePath,
+		Biography:       collaboratorProfile.Biography,
+		IsVerified:      collaboratorProfile.IsVerified,
+	}
+
+	collabUser := &UserDetail{
+		Username: collaborator.Username,
+		Profile:  *collabUserProfile,
 	}
 
 	fcCover := &FlashcardCover{

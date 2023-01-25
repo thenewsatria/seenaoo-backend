@@ -24,6 +24,12 @@ var USER_USERNAME_ALREADY_USED_ERROR_MESSAGE = "Username already used"
 var USER_USERNAME_NOT_FOUND_ERROR_MESSAGE = "user with speficied username is not found"
 var USER_FAIL_TO_FETCH_ERROR_MESSAGE = "Failed to fetch user hint from database"
 
+var USER_PROFILE_FAIL_TO_INSERT_ERROR_MESSAGE = "Failed to insert user profile to database"
+var USER_PROFILE_NOT_FOUND_ERROR_MESSAGE = "user profile related with user is not found"
+var USER_PROFILE_FAIL_TO_FETCH_ERROR_MESSAGE = "Failed to fetch user profile from database"
+var USER_PROFILE_FORM_PARSER_ERROR_MESSAGE = "Error parsing user profile form data request"
+var USER_PROFILE_FAIL_TO_UPDATE_ERROR_MESSAGE = "Failed to update user profile"
+
 var AUTH_FAIL_TO_GENERATE_ACCESS_TOKEN_ERROR_MESSAGE = "Failed to generate access token"
 var AUTH_FAIL_TO_GENERATE_REFRESH_TOKEN_ERROR_MESSAGE = "Failed to generate refresh token"
 var AUTH_BODY_PARSER_ERROR_MESSAGE = "Error parsing user credential body request"

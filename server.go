@@ -22,11 +22,13 @@ func main() {
 	seeds.SeedPermissionsCollection()
 
 	app := fiber.New()
+
+	host := os.Getenv("HOST")
 	port := os.Getenv("PORT")
 
 	routes.Router(app)
 
-	app.Listen(":" + port)
+	app.Listen(host + ":" + port)
 
 	defer database.DisconnectDB()
 	defer database.CancelDBContext()

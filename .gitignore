@@ -1,1 +1,6 @@
 .env
+/public/avatars/*
+/public/flashcardcovers/*
+/public/flashcards/fronts/*
+/public/flashcards/backs/*
+/public/banners/*
