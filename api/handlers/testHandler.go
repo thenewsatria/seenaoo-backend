@@ -30,6 +30,10 @@ func TestHandler(service tests.Service) fiber.Handler {
 			fmt.Println(file.Filename)
 		}
 
+		for _, val := range form.Value["manuk"] {
+			fmt.Println(val)
+		}
+
 		c.Status(http.StatusInternalServerError)
 		return c.JSON(&fiber.Map{
 			"status": true,

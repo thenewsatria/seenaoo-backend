@@ -65,6 +65,7 @@ func FlashcardCoverDetailSuccessResponse(fcCover *models.FlashcardCover, tags *[
 
 	owner := &UserDetail{
 		Username: author.Username,
+		Email:    author.Email,
 		Profile:  *userProfile,
 		// DisplayName:     author.DisplayName,
 		// AvatarImagePath: author.AvatarImagePath,
