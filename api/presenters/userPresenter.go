@@ -7,10 +7,12 @@ import (
 
 type User struct {
 	Username string `bson:"username" json:"username"`
+	Email    string `bson:"email" json:"email"`
 }
 
 type UserDetail struct {
 	Username string      `bson:"username" json:"username"`
+	Email    string      `bson:"email" json:"email"`
 	Profile  UserProfile `bson:"profile" json:"profile"`
 }
 
@@ -25,6 +27,7 @@ func UserDetailSuccessResponse(u *models.User, p *models.UserProfile) *fiber.Map
 
 	userDetail := &UserDetail{
 		Username: u.Username,
+		Email:    u.Email,
 		Profile:  *userProfile,
 	}
 

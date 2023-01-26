@@ -53,7 +53,26 @@ func ValidateContentType(file *multipart.FileHeader, allowedContentType []string
 	return errors.New(errOut)
 }
 
-func ValidateFiles(files []*multipart.FileHeader, maxSize int64, allowedContentType []string) error {
+func ValidateFile(file *multipart.FileHeader, maxSize int64, allowedContentType []string) error {
+	errorList := []string{}
+	err := ValidateContentType(file, allowedContentType)
+	if err != nil {
+		errorList = append(errorList, err.Error())
+	}
+	if file.Size > maxSize {
+		errorStr := fmt.Sprintf("%s is too big, please upload a file less than %d kb", file.Filename, maxSize/1024)
+		errorList = append(errorList, errorStr)
+	}
+
+	if len(errorList) == 0 {
+		return nil
+	}
+
+	errOut := strings.Join(errorList, ", ")
+	return errors.New(errOut)
+}
+
+func ValidateMultipleFile(files []*multipart.FileHeader, maxSize int64, allowedContentType []string) error {
 	errorList := []string{}
 	for _, file := range files {
 		err := ValidateContentType(file, allowedContentType)
