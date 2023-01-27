@@ -357,6 +357,14 @@ func DeleteFlashcardCover(flashcardCoverService flashcardcovers.Service) fiber.H
 			return c.JSON(presenters.ErrorResponse(messages.FLASHCARD_COVER_NOT_FOUND_ERROR_MESSAGE))
 		}
 
+		if fcCover.ImagePath != "" {
+			err := os.Remove(fmt.Sprintf("./public/flashcardcovers/%s", filepath.Base(fcCover.ImagePath)))
+			if err != nil {
+				c.Status(http.StatusInternalServerError)
+				return c.JSON(presenters.ErrorResponse(err.Error()))
+			}
+		}
+
 		deletedFcCover, err := flashcardCoverService.RemoveFlashcardCover(fcCover)
 		if err != nil {
 			c.Status(http.StatusInternalServerError)
@@ -401,6 +409,14 @@ func PurgeFlashcardCover(flashcardCoverService flashcardcovers.Service, flashcar
 		if err != nil {
 			c.Status(http.StatusInternalServerError)
 			return c.JSON(presenters.ErrorResponse(messages.FLASHCARD_FAIL_TO_DELETE_ERROR_MESSAGE))
+		}
+
+		if fcCover.ImagePath != "" {
+			err := os.Remove(fmt.Sprintf("./public/flashcardcovers/%s", filepath.Base(fcCover.ImagePath)))
+			if err != nil {
+				c.Status(http.StatusInternalServerError)
+				return c.JSON(presenters.ErrorResponse(err.Error()))
+			}
 		}
 
 		// Delete The flashcard cover
