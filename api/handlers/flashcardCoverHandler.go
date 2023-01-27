@@ -71,28 +71,28 @@ func AddFlashcardCover(flashcardCoverService flashcardcovers.Service, tagService
 			err = os.MkdirAll("./public/flashcardcovers", os.ModePerm)
 			if err != nil {
 				c.Status(http.StatusInternalServerError)
-				return c.JSON(presenters.ErrorResponse("Error creating directory for flashcard cover"))
+				return c.JSON(presenters.ErrorResponse("Error creating directory for flashcard cover image"))
 			}
 
-			// Membuat file baru untuk tujuan copy file avatar
+			// Membuat file baru untuk tujuan copy file flashcard cover
 			newCvrImgPath = fmt.Sprintf("./public/flashcardcovers/%s_%d%s", currentUser.Username, time.Now().UnixNano(), filepath.Ext(fcImg[0].Filename))
 			newFile, err := os.Create(newCvrImgPath)
 			if err != nil {
 				c.Status(http.StatusInternalServerError)
-				return c.JSON(presenters.ErrorResponse("Error creating new file for flashcard cover"))
+				return c.JSON(presenters.ErrorResponse("Error creating new file for flashcard cover images"))
 			}
 
 			// Menutup file baru diakhir
 			defer newFile.Close()
 
-			// Mengcopy file avatar ke dalam file baru
+			// Mengcopy file cover image ke dalam file baru
 			_, err = io.Copy(newFile, fileCvrImg)
 			if err != nil {
 				c.Status(http.StatusInternalServerError)
 				return c.JSON(presenters.ErrorResponse("Error copying flascard cover image to directory"))
 			}
 
-			// Menyimpan path file baru yang dapat diakses melalui url static pada avatarImagePath
+			// Menyimpan path file baru yang dapat diakses melalui url static pada imagePath
 			fcCover.ImagePath = fmt.Sprintf("http://%s/api/v1/static/flashcardcovers/%s", c.Hostname(), filepath.Base(newCvrImgPath))
 		}
 
@@ -227,45 +227,112 @@ func UpdateFlashcardCover(flashcardCoverService flashcardcovers.Service, tagServ
 			return c.JSON(presenters.ErrorResponse(messages.FLASHCARD_COVER_FAIL_TO_FETCH_ERROR_MESSAGE))
 		}
 
-		updateBody := &models.FlashcardCoverRequest{}
-		if err := c.BodyParser(updateBody); err != nil {
+		currentUser := c.Locals("currentUser").(*models.User)
+
+		formData, err := c.MultipartForm()
+		if err != nil {
 			c.Status(http.StatusBadRequest)
 			return c.JSON(presenters.ErrorResponse(messages.FLASHCARD_COVER_BODY_PARSER_ERROR_MESSAGE))
 		}
 
-		newSlug := slug.Make(updateBody.Title) + "-" + fmt.Sprintf("%v", time.Now().Unix())
+		newSlug := slug.Make(formData.Value["title"][0]) + "-" + fmt.Sprintf("%v", time.Now().Unix())
 		fcCover.Slug = newSlug
-		fcCover.Title = updateBody.Title
-		fcCover.Description = updateBody.Description
-		fcCover.ImagePath = updateBody.ImagePath
+		fcCover.Title = formData.Value["title"][0]
+		fcCover.Description = formData.Value["description"][0]
+
+		// membaca file yang diupload melalui form dengan key avatar dan banner
+		fcImg := formData.File["coverImage"]
+
+		// deklarasi path lokal untuk menyimpan file
+		newFcCvrImg := ""
+
+		if fcImg != nil {
+			// Cek extensi file dan ukurannya
+			err := validator.ValidateFile(fcImg[0], 2*1024*2014, []string{"image/png", "image/jpeg"})
+			if err != nil {
+				c.Status(http.StatusBadRequest)
+				return c.JSON(presenters.ErrorResponse(err.Error()))
+			}
+
+			// Membuka file untuk melalukan pengkopian ke direktori baru
+			fileCvrImg, err := fcImg[0].Open()
+
+			if err != nil {
+				c.Status(http.StatusInternalServerError)
+				return c.JSON(presenters.ErrorResponse(err.Error()))
+			}
+
+			// tutup file avatar diakhir
+			defer fileCvrImg.Close()
+
+			// membuat folder penyimpanan file jika  tidak ada
+			err = os.MkdirAll("./public/flashcardcovers", os.ModePerm)
+			if err != nil {
+				c.Status(http.StatusInternalServerError)
+				return c.JSON(presenters.ErrorResponse("Error creating directory for flashcard cover image"))
+			}
+
+			// Membuat file baru untuk tujuan copy file avatar
+			newFcCvrImg = fmt.Sprintf("./public/flashcardcovers/%s_%d%s", currentUser.Username, time.Now().UnixNano(), filepath.Ext(fcCover.ImagePath))
+			newFile, err := os.Create(newFcCvrImg)
+			if err != nil {
+				c.Status(http.StatusInternalServerError)
+				return c.JSON(presenters.ErrorResponse("Error creating new file for flashcard cover image"))
+			}
+
+			// Menutup file baru diakhir
+			defer newFile.Close()
+
+			// hapus avatar lama jika bukan default avatar default
+			if fcCover.ImagePath != "" {
+				err := os.Remove(fmt.Sprintf("./public/flashcardcovers/%s", filepath.Base(fcCover.ImagePath)))
+				if err != nil {
+					c.Status(http.StatusInternalServerError)
+					return c.JSON(presenters.ErrorResponse(err.Error()))
+				}
+			}
+
+			// Mengcopy file avatar ke dalam file baru
+			_, err = io.Copy(newFile, fileCvrImg)
+			if err != nil {
+				c.Status(http.StatusInternalServerError)
+				return c.JSON(presenters.ErrorResponse("rror copying flascard cover image to directory"))
+			}
+
+			// Menyimpan path file baru yang dapat diakses melalui url static pada avatarImagePath
+			fcCover.ImagePath = fmt.Sprintf("http://%s/api/v1/static/flashcardcovers/%s", c.Hostname(), filepath.Base(newFcCvrImg))
+		}
 
 		tagIds := []primitive.ObjectID{}
 
-		for _, tagString := range updateBody.Tags {
-			tagName := &models.TagByName{TagName: tagString}
-			existedTag, err := tagService.FetchTagByName(tagName)
-			if err != nil {
-				if err == mongo.ErrNoDocuments { //jika tag tidak ada maka buat baru
-					tag := &models.Tag{TagName: tagString}
-					newTag, err, isValidationError := tagService.InsertTag(tag)
-					if err != nil {
-						if isValidationError {
-							c.Status(http.StatusBadRequest)
-							return c.JSON(presenters.ErrorResponse(err.Error()))
+		for _, tagString := range formData.Value["tags"] {
+			if tagString != "" {
+				tagName := &models.TagByName{TagName: tagString}
+				existedTag, err := tagService.FetchTagByName(tagName)
+				if err != nil {
+					if err == mongo.ErrNoDocuments { //jika tag tidak ada maka buat baru
+						tag := &models.Tag{TagName: tagString}
+						newTag, err, isValidationError := tagService.InsertTag(tag)
+						if err != nil {
+							if isValidationError {
+								c.Status(http.StatusBadRequest)
+								return c.JSON(presenters.ErrorResponse(err.Error()))
+							}
+							c.Status(http.StatusInternalServerError)
+							return c.JSON(presenters.ErrorResponse(messages.TAG_FAIL_TO_INSERT_ERROR_MESSAGE))
 						}
-						c.Status(http.StatusInternalServerError)
-						return c.JSON(presenters.ErrorResponse(messages.TAG_FAIL_TO_INSERT_ERROR_MESSAGE))
+						tagIds = append(tagIds, newTag.ID)
+						continue
 					}
-					tagIds = append(tagIds, newTag.ID)
-					continue
+					c.Status(http.StatusInternalServerError)
+					return c.JSON(presenters.ErrorResponse(messages.TAG_FAIL_TO_FETCH_ERROR_MESSAGE))
 				}
-				c.Status(http.StatusInternalServerError)
-				return c.JSON(presenters.ErrorResponse(messages.TAG_FAIL_TO_FETCH_ERROR_MESSAGE))
+				tagIds = append(tagIds, existedTag.ID)
 			}
-			tagIds = append(tagIds, existedTag.ID)
 		}
 
 		fcCover.Tags = tagIds
+
 		updatedFcCover, err, isValidationError := flashcardCoverService.UpdateFlashcardCover(fcCover)
 		if err != nil {
 			if isValidationError {
