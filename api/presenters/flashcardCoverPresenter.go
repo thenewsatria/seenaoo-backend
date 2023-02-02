@@ -100,7 +100,7 @@ func FlashcardCoverDetailSuccessResponse(fcCover *models.FlashcardCover, tags *[
 			FrontImagePath:   flashcard.FrontImagePath,
 			BackImagePath:    flashcard.BackImagePath,
 			FrontText:        flashcard.FrontText,
-			BackText:         flashcard.BackImagePath,
+			BackText:         flashcard.BackText,
 			Question:         flashcard.Question,
 			FlashCardCoverId: flashcard.FlashCardCoverId,
 			CreatedAt:        flashcard.CreatedAt,

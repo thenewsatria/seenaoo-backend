@@ -36,6 +36,18 @@ func flashcardRouter(app fiber.Router, flashcardService flashcards.Service, flas
 		middlewares.HavePermit(permissionService, true, "FLASHCARD.CLEAR_CARD_HINT"),
 		handlers.DeleteFlashcardHintsByFlashcardId(flashcardHintService, flashcardService))
 
+	flashcardRoutes.Delete("/frontimage/:flashcardId",
+		middlewares.IsLoggedIn(userService),
+		middlewares.IsAuthorized("FLASHCARD", flashcardService, flashcardCoverService, true, true, collaborationService, roleService),
+		middlewares.HavePermit(permissionService, true, "FLASHCARD.UPDATE_CARD"),
+		handlers.DeleteFlashcardFrontImage(flashcardService))
+
+	flashcardRoutes.Delete("/backimage/:flashcardId",
+		middlewares.IsLoggedIn(userService),
+		middlewares.IsAuthorized("FLASHCARD", flashcardService, flashcardCoverService, true, true, collaborationService, roleService),
+		middlewares.HavePermit(permissionService, true, "FLASHCARD.UPDATE_CARD"),
+		handlers.DeleteFlashcardBackImage(flashcardService))
+
 	//depends on the cover privacy setting
 	flashcardRoutes.Get("/:flashcardId", handlers.GetFlashcard(flashcardService, flashcardHintService))
 

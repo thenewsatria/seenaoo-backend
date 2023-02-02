@@ -36,7 +36,7 @@ func EditUserProfile(userProfileService userprofiles.Service) fiber.Handler {
 			return c.JSON(presenters.ErrorResponse(messages.USER_PROFILE_FAIL_TO_FETCH_ERROR_MESSAGE))
 		}
 
-		// Membaca form
+		// Membaca form data
 		formData, err := c.MultipartForm()
 		if err != nil {
 			c.Status(http.StatusBadRequest)
@@ -51,6 +51,12 @@ func EditUserProfile(userProfileService userprofiles.Service) fiber.Handler {
 		newAvatarPath := ""
 		newBannerPath := ""
 
+		// simpan path avatar saat ini untuk proses penghapusan file jika proses update sukses
+		currentAvatarPath := userProfile.AvatarImagePath
+		currentBannerPath := userProfile.BannerImagePath
+
+		// validasi file untuk avatar dan banner
+
 		// Cek apakah file dengan key avatar tidak kosong
 		if avatar != nil {
 			// Cek extensi file dan ukurannya
@@ -59,7 +65,20 @@ func EditUserProfile(userProfileService userprofiles.Service) fiber.Handler {
 				c.Status(http.StatusBadRequest)
 				return c.JSON(presenters.ErrorResponse(err.Error()))
 			}
+		}
 
+		// cek apakah file dengan key banner tidak kosong
+		if banner != nil {
+			// cek ekstensi file beserta dengan ukurannya
+			err = validator.ValidateFile(banner[0], 3*1024*1024, []string{"image/png", "image/jpeg"})
+			if err != nil {
+				c.Status(http.StatusBadRequest)
+				return c.JSON(presenters.ErrorResponse(err.Error()))
+			}
+		}
+
+		// jika avatar tidak kosong maka:
+		if avatar != nil {
 			// Membuka file untuk melalukan pengkopian ke direktori baru
 			userAvatar := avatar[0]
 			fileAvatar, err := userAvatar.Open()
@@ -90,15 +109,6 @@ func EditUserProfile(userProfileService userprofiles.Service) fiber.Handler {
 			// Menutup file baru diakhir
 			defer newFile.Close()
 
-			// hapus avatar lama jika bukan default avatar default
-			if filepath.Base(userProfile.AvatarImagePath) != "default-avatar.png" {
-				err := os.Remove(fmt.Sprintf("./public/avatars/%s", filepath.Base(userProfile.AvatarImagePath)))
-				if err != nil {
-					c.Status(http.StatusInternalServerError)
-					return c.JSON(presenters.ErrorResponse(err.Error()))
-				}
-			}
-
 			// Mengcopy file avatar ke dalam file baru
 			_, err = io.Copy(newFile, fileAvatar)
 			if err != nil {
@@ -112,13 +122,6 @@ func EditUserProfile(userProfileService userprofiles.Service) fiber.Handler {
 
 		// Lakukan proses yang sama dengan banner
 		if banner != nil {
-
-			err = validator.ValidateFile(banner[0], 3*1024*1024, []string{"image/png", "image/jpeg"})
-			if err != nil {
-				c.Status(http.StatusBadRequest)
-				return c.JSON(presenters.ErrorResponse(err.Error()))
-			}
-
 			userBanner := banner[0]
 			fileBanner, err := userBanner.Open()
 
@@ -135,7 +138,7 @@ func EditUserProfile(userProfileService userprofiles.Service) fiber.Handler {
 				c.JSON(presenters.ErrorResponse("Error creating directory for banners"))
 			}
 
-			newBannerPath := fmt.Sprintf("./public/banners/%s_%d%s", currentUser.Username, time.Now().UnixNano(), filepath.Ext(userBanner.Filename))
+			newBannerPath = fmt.Sprintf("./public/banners/%s_%d%s", currentUser.Username, time.Now().UnixNano(), filepath.Ext(userBanner.Filename))
 			newFile, err := os.Create(newBannerPath)
 			if err != nil {
 				c.Status(http.StatusInternalServerError)
@@ -143,15 +146,6 @@ func EditUserProfile(userProfileService userprofiles.Service) fiber.Handler {
 			}
 
 			defer newFile.Close()
-
-			// hapus banner lama jika bukan default
-			if filepath.Base(userProfile.BannerImagePath) != "default-banner.jpg" {
-				err := os.Remove(fmt.Sprintf("./public/banners/%s", filepath.Base(userProfile.BannerImagePath)))
-				if err != nil {
-					c.Status(http.StatusInternalServerError)
-					return c.JSON(presenters.ErrorResponse(err.Error()))
-				}
-			}
 
 			_, err = io.Copy(newFile, fileBanner)
 			if err != nil {
@@ -172,17 +166,17 @@ func EditUserProfile(userProfileService userprofiles.Service) fiber.Handler {
 			// Jika terdapat error maka hapus file yang sebelumnya telah diupload untuk mencegah duplikasi file
 			// dilakukan pada banner dan juga avatar
 			if avatar != nil {
-				err = os.Remove(newAvatarPath)
-				if err != nil {
+				errFile := os.Remove(newAvatarPath)
+				if errFile != nil {
 					c.Status(http.StatusInternalServerError)
-					return c.JSON(presenters.ErrorResponse(err.Error()))
+					return c.JSON(presenters.ErrorResponse(errFile.Error()))
 				}
 			}
 			if banner != nil {
-				err = os.Remove(newBannerPath)
-				if err != nil {
+				errFile := os.Remove(newBannerPath)
+				if errFile != nil {
 					c.Status(http.StatusInternalServerError)
-					return c.JSON(presenters.ErrorResponse(err.Error()))
+					return c.JSON(presenters.ErrorResponse(errFile.Error()))
 				}
 			}
 			// Cek apakah merupakan error validasi
@@ -195,7 +189,28 @@ func EditUserProfile(userProfileService userprofiles.Service) fiber.Handler {
 			return c.JSON(presenters.ErrorResponse(messages.USER_PROFILE_FAIL_TO_UPDATE_ERROR_MESSAGE))
 		}
 
-		// jika tidak terdapat error maka lanjutkan mengirim response sukses
+		// dilakukan penghapusan terhadap file sebelumnya apabila proses update sukses
+		// (apabila bukan merupakan file default dan terdapat file upload)
+
+		// Proses dilakukan terhadap avatar maupun banner
+
+		if filepath.Base(currentAvatarPath) != "default-avatar.png" && avatar != nil {
+			errFile := os.Remove(fmt.Sprintf("./public/avatars/%s", filepath.Base(currentAvatarPath)))
+			if errFile != nil {
+				c.Status(http.StatusInternalServerError)
+				return c.JSON(presenters.ErrorResponse(errFile.Error()))
+			}
+		}
+
+		if filepath.Base(currentBannerPath) != "default-banner.jpg" && banner != nil {
+			errFile := os.Remove(fmt.Sprintf("./public/banners/%s", filepath.Base(currentBannerPath)))
+			if errFile != nil {
+				c.Status(http.StatusInternalServerError)
+				return c.JSON(presenters.ErrorResponse(errFile.Error()))
+			}
+		}
+
+		// Mengirimkan response sukses
 		c.Status(http.StatusOK)
 		return c.JSON(presenters.UserProfileDetailSuccessResponse(updatedUserProfile, currentUser))
 	}
@@ -220,47 +235,45 @@ func DeleteProfileBanner(userProfileService userprofiles.Service) fiber.Handler 
 			return c.JSON(presenters.ErrorResponse(messages.USER_PROFILE_FAIL_TO_FETCH_ERROR_MESSAGE))
 		}
 
-		// 3. Seleksi kondisi nilai banner profile
-		// - Jika merupakan default maka abaikan penghapusan
-		// - Jika bukdan merupakan default maka hapus file tersebut dari direktori
-		if filepath.Base(currentUserProfile.BannerImagePath) != "default-banner.jpg" {
-			toDeleteFileName := fmt.Sprintf("./public/banners/%s", filepath.Base(currentUserProfile.BannerImagePath))
+		// Simpan atribut banner image path saat ini
+		currentBannerImage := currentUserProfile.BannerImagePath
+
+		// Ubah atribut bannerImagePath pada path default banner
+		currentUserProfile.BannerImagePath = fmt.Sprintf("http://%s/api/v1/static/defaults/%s", c.Hostname(), "default-banner.jpg")
+
+		// Update profile dengan userprofiles service
+		updatedUserProfile, err, isValidationError := userProfileService.UpdateProfile(currentUserProfile)
+		if err != nil {
+			if isValidationError {
+				c.Status(http.StatusBadRequest)
+				return c.JSON(presenters.ErrorResponse(err.Error()))
+			}
+			c.Status(http.StatusInternalServerError)
+			return c.JSON(presenters.ErrorResponse(messages.USER_PROFILE_FAIL_TO_UPDATE_ERROR_MESSAGE))
+		}
+
+		// Jika proses update sukses dan file banner sebelumnya bukan merupakan file default
+		// maka dilakukan penghapusan pada file banner lama
+		if filepath.Base(currentBannerImage) != "default-banner.jpg" {
+			toDeleteFileName := fmt.Sprintf("./public/banners/%s", filepath.Base(currentBannerImage))
 			err := os.Remove(toDeleteFileName)
 			if err != nil {
 				c.Status(http.StatusInternalServerError)
 				return c.JSON(presenters.ErrorResponse(err.Error()))
 			}
-
-			// 4. Update userprofile dengan memasukan url static dari default banner
-			defaultBannerPath := fmt.Sprintf("http://%s/api/v1/static/defaults/%s", c.Hostname(), "default-banner.jpg")
-			currentUserProfile.BannerImagePath = defaultBannerPath
-
-			// 5. Update profile dengan userprofiles service
-			updatedUserProfile, err, isValidationError := userProfileService.UpdateProfile(currentUserProfile)
-			if err != nil {
-				if isValidationError {
-					c.Status(http.StatusBadRequest)
-					return c.JSON(presenters.ErrorResponse(err.Error()))
-				}
-				c.Status(http.StatusInternalServerError)
-				return c.JSON(presenters.ErrorResponse(messages.USER_PROFILE_FAIL_TO_UPDATE_ERROR_MESSAGE))
-			}
-
-			// 6. Kirimkan response berupa user dan detil userprofile sebagai response
-			c.Status(http.StatusOK)
-			return c.JSON(presenters.UserProfileDetailSuccessResponse(updatedUserProfile, currentUser))
 		}
 
+		// Kirimkan response sukses
 		c.Status(http.StatusOK)
-		return c.JSON(presenters.UserProfileDetailSuccessResponse(currentUserProfile, currentUser))
+		return c.JSON(presenters.UserProfileDetailSuccessResponse(updatedUserProfile, currentUser))
 	}
 }
 
 func DeleteProfileAvatar(userProfileService userprofiles.Service) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		// 1. Ambil user saat ini
+		//Ambil user saat ini
 		currentUser := c.Locals("currentUser").(*models.User)
-		// 2. Ambil profile milik user
+		//Ambil profile milik user
 		upOwner := &models.UserProfileByOwner{Owner: currentUser.Username}
 		currentUserProfile, err := userProfileService.FetchProfileByOwner(upOwner)
 
@@ -275,47 +288,45 @@ func DeleteProfileAvatar(userProfileService userprofiles.Service) fiber.Handler 
 			return c.JSON(presenters.ErrorResponse(messages.USER_PROFILE_FAIL_TO_FETCH_ERROR_MESSAGE))
 		}
 
-		// 3. Seleksi kondisi nilai avatar profile
-		// - Jika merupakan default maka abaikan penghapusan
-		// - Jika bukan merupakan default maka hapus file tersebut dari direktori
-		if filepath.Base(currentUserProfile.AvatarImagePath) != "default-avatar.png" {
-			toDeleteFileName := fmt.Sprintf("./public/avatars/%s", filepath.Base(currentUserProfile.AvatarImagePath))
+		// Simpan atribut avatar image path saat ini
+		currentAvatarImage := currentUserProfile.AvatarImagePath
+
+		// Ubah atribut bannerImagePath pada path default avatar
+		currentUserProfile.AvatarImagePath = fmt.Sprintf("http://%s/api/v1/static/defaults/%s", c.Hostname(), "default-avatar.png")
+
+		// Update profile dengan userprofiles service
+		updatedUserProfile, err, isValidationError := userProfileService.UpdateProfile(currentUserProfile)
+		if err != nil {
+			if isValidationError {
+				c.Status(http.StatusBadRequest)
+				return c.JSON(presenters.ErrorResponse(err.Error()))
+			}
+			c.Status(http.StatusInternalServerError)
+			return c.JSON(presenters.ErrorResponse(messages.USER_PROFILE_FAIL_TO_UPDATE_ERROR_MESSAGE))
+		}
+
+		// Jika proses update sukses dan file avatar sebelumnya bukan merupakan file default
+		// maka dilakukan penghapusan pada file avatar lama
+		if filepath.Base(currentAvatarImage) != "default-avatar.png" {
+			toDeleteFileName := fmt.Sprintf("./public/avatars/%s", filepath.Base(currentAvatarImage))
 			err := os.Remove(toDeleteFileName)
 			if err != nil {
 				c.Status(http.StatusInternalServerError)
 				return c.JSON(presenters.ErrorResponse(err.Error()))
 			}
-
-			// 4. Update userprofile dengan memasukan url static dari default avatar
-			defaultAvatarPath := fmt.Sprintf("http://%s/api/v1/static/defaults/%s", c.Hostname(), "default-avatar.png")
-			currentUserProfile.AvatarImagePath = defaultAvatarPath
-
-			// 5. Update profile dengan userprofiles service
-			updatedUserProfile, err, isValidationError := userProfileService.UpdateProfile(currentUserProfile)
-			if err != nil {
-				if isValidationError {
-					c.Status(http.StatusBadRequest)
-					return c.JSON(presenters.ErrorResponse(err.Error()))
-				}
-				c.Status(http.StatusInternalServerError)
-				return c.JSON(presenters.ErrorResponse(messages.USER_PROFILE_FAIL_TO_UPDATE_ERROR_MESSAGE))
-			}
-
-			// 6. Kirimkan response berupa user dan detil userprofile sebagai response
-			c.Status(http.StatusOK)
-			return c.JSON(presenters.UserProfileDetailSuccessResponse(updatedUserProfile, currentUser))
 		}
 
+		// Kirimkan response sukses
 		c.Status(http.StatusOK)
-		return c.JSON(presenters.UserProfileDetailSuccessResponse(currentUserProfile, currentUser))
+		return c.JSON(presenters.UserProfileDetailSuccessResponse(updatedUserProfile, currentUser))
 	}
 }
 
 func GetUserProfile(userProfileService userprofiles.Service) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		// 1. Ambil user saat ini
+		// Ambil user saat ini
 		currentUser := c.Locals("currentUser").(*models.User)
-		// 2. Ambil profile milik user
+		// Ambil profile milik user
 		upOwner := &models.UserProfileByOwner{Owner: currentUser.Username}
 		currentUserProfile, err := userProfileService.FetchProfileByOwner(upOwner)
 
@@ -330,7 +341,7 @@ func GetUserProfile(userProfileService userprofiles.Service) fiber.Handler {
 			return c.JSON(presenters.ErrorResponse(messages.USER_PROFILE_FAIL_TO_FETCH_ERROR_MESSAGE))
 		}
 
-		// 3. Kirimkan response berupa user dan detil userprofile sebagai response
+		//Kirimkan response berupa user dan detil userprofile sebagai response
 		c.Status(http.StatusOK)
 		return c.JSON(presenters.UserProfileDetailSuccessResponse(currentUserProfile, currentUser))
 	}

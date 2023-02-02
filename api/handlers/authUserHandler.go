@@ -74,9 +74,6 @@ func RegisterUser(userService users.Service, refreshTokenService refreshtokens.S
 
 		_, err, isValidationError = userProfileService.InsertProfile(userProfile)
 		if err != nil {
-
-			//TODO: jika error delete user
-
 			if isValidationError {
 				c.Status(http.StatusBadRequest)
 				return c.JSON(presenters.ErrorResponse(err.Error()))
@@ -94,9 +91,6 @@ func RegisterUser(userService users.Service, refreshTokenService refreshtokens.S
 
 		_, err, isValidationError = refreshTokenService.InsertRefreshToken(refreshToken)
 		if err != nil {
-
-			//TODO: jika error delete user dan profile
-
 			if isValidationError {
 				c.Status(http.StatusBadRequest)
 				return c.JSON(presenters.ErrorResponse(err.Error()))
