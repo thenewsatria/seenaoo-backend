@@ -3,8 +3,11 @@ package routes
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/limiter"
 	"github.com/thenewsatria/seenaoo-backend/api/middlewares"
 	"github.com/thenewsatria/seenaoo-backend/database"
 	"github.com/thenewsatria/seenaoo-backend/pkg/collaborations"
@@ -67,6 +70,21 @@ func Router(app *fiber.App) {
 
 	api := app.Group("/api")
 	apiV1 := api.Group("/v1")
+
+	apiV1.Use(cors.New(
+		cors.Config{
+			AllowOrigins: "*",
+			AllowMethods: "GET,POST,PUT,DELETE",
+		},
+	))
+
+	apiV1.Use(limiter.New(
+		limiter.Config{
+			Max:          30,
+			Expiration:   30 * time.Second,
+			LimitReached: middlewares.LimitReach(),
+		},
+	))
 
 	apiV1.Get("/", func(c *fiber.Ctx) error {
 		c.Status(http.StatusOK)
