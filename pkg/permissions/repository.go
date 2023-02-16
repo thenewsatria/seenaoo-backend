@@ -36,7 +36,6 @@ func (r *repository) CreatePermission(p *models.Permission) (*models.Permission,
 	err := validator.ValidateStruct(p)
 	if err != nil {
 		if validator.IsValidationError(err) {
-			err = validator.TranslateError(err)
 			return nil, err, true
 		}
 		return nil, err, false
@@ -139,7 +138,6 @@ func (r *repository) UpdatePermission(p *models.Permission) (*models.Permission,
 	err := validator.ValidateStruct(p)
 	if err != nil {
 		if validator.IsValidationError(err) {
-			err = validator.TranslateError(err)
 			return nil, err, true
 		}
 		return nil, err, false

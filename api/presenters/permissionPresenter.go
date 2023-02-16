@@ -36,8 +36,7 @@ func PermissionsGroupedByItemCateogory(groupedPermissions map[string]*[]models.P
 
 	}
 	return &fiber.Map{
-		"status": true,
+		"status": "success",
 		"data":   permits,
-		"error":  nil,
 	}
 }

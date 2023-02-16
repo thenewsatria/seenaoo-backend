@@ -32,7 +32,6 @@ func (r *repository) CreateFlashcardCover(fcCover *models.FlashcardCover) (*mode
 	err := validator.ValidateStruct(fcCover)
 	if err != nil {
 		if validator.IsValidationError(err) {
-			err = validator.TranslateError(err)
 			return nil, err, true
 		}
 		return nil, err, false
@@ -86,7 +85,6 @@ func (r *repository) UpdateFlashcardCover(fcCover *models.FlashcardCover) (*mode
 	err := validator.ValidateStruct(fcCover)
 	if err != nil {
 		if validator.IsValidationError(err) {
-			err = validator.TranslateError(err)
 			return nil, err, true
 		}
 		return nil, err, false

@@ -46,9 +46,8 @@ func FlashcardSuccessResponse(f *models.Flashcard) *fiber.Map {
 		UpdatedAt:        f.UpdatedAt,
 	}
 	return &fiber.Map{
-		"status": true,
+		"status": "success",
 		"data":   flashcard,
-		"error":  nil,
 	}
 }
 
@@ -76,8 +75,7 @@ func FlashcardDetailSuccessResponse(f *models.Flashcard, hints *[]models.Flashca
 	}
 
 	return &fiber.Map{
-		"status": true,
+		"status": "success",
 		"data":   flashcard,
-		"error":  nil,
 	}
 }

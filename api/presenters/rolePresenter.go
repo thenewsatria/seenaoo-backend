@@ -42,19 +42,14 @@ func RoleSuccessResponse(r *models.Role) *fiber.Map {
 		UpdatedAt:   r.CreatedAt,
 	}
 	return &fiber.Map{
-		"success": true,
+		"success": "success",
 		"data":    role,
-		"error":   nil,
 	}
 }
 
 func RoleDetailSuccessResponse(r *models.Role, u *models.User, p *[]models.Permission) *fiber.Map {
 	usr := &User{
 		Username: u.Username,
-		// DisplayName:     u.DisplayName,
-		// AvatarImagePath: u.AvatarImagePath,
-		// Biography:       u.Biography,
-		// IsVerified:      u.IsVerified,
 	}
 	roleDetail := &RoleDetail{
 		ID:          r.ID,
@@ -79,9 +74,8 @@ func RoleDetailSuccessResponse(r *models.Role, u *models.User, p *[]models.Permi
 		roleDetail.Permissions = append(roleDetail.Permissions, *permit)
 	}
 	return &fiber.Map{
-		"success": true,
+		"success": "success",
 		"data":    roleDetail,
-		"error":   nil,
 	}
 }
 
@@ -101,8 +95,7 @@ func RolesSuccessResponse(rs *[]models.Role) *fiber.Map {
 		roles = append(roles, *role)
 	}
 	return &fiber.Map{
-		"success": true,
+		"success": "success",
 		"data":    roles,
-		"error":   nil,
 	}
 }

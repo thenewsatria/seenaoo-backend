@@ -38,7 +38,6 @@ func (r *repository) CreateFlashcardHint(fh *models.FlashcardHint) (*models.Flas
 	err := validator.ValidateStruct(fh)
 	if err != nil {
 		if validator.IsValidationError(err) {
-			err = validator.TranslateError(err)
 			return nil, err, true
 		}
 		return nil, err, false
@@ -96,7 +95,6 @@ func (r *repository) UpdateFlashcardHint(fh *models.FlashcardHint) (*models.Flas
 	err := validator.ValidateStruct(fh)
 	if err != nil {
 		if validator.IsValidationError(err) {
-			err = validator.TranslateError(err)
 			return nil, err, true
 		}
 		return nil, err, false

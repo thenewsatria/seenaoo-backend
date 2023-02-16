@@ -45,9 +45,8 @@ func CollaborationSuccessResponse(collaboration *models.Collaboration) *fiber.Ma
 	}
 
 	return &fiber.Map{
-		"status": true,
+		"status": "success",
 		"data":   collab,
-		"error":  nil,
 	}
 }
 
@@ -119,6 +118,5 @@ func CollaborationFlashcardDetailSuccessResponse(collaboration *models.Collabora
 	return &fiber.Map{
 		"status": "success",
 		"data":   collabFlashcardCoverDetail,
-		"error":  nil,
 	}
 }

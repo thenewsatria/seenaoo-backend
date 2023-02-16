@@ -11,6 +11,7 @@ import (
 	"github.com/thenewsatria/seenaoo-backend/pkg/permissions"
 	"github.com/thenewsatria/seenaoo-backend/pkg/roles"
 	"github.com/thenewsatria/seenaoo-backend/pkg/users"
+	"github.com/thenewsatria/seenaoo-backend/utils/validator"
 	"github.com/thenewsatria/seenaoo-backend/variables/messages"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -33,8 +34,9 @@ func MakeNewRole(roleService roles.Service) fiber.Handler {
 		result, err, isValidationError := roleService.InsertRole(roleReq)
 		if err != nil {
 			if isValidationError {
+				translatedErrors := validator.TranslateError(err)
 				c.Status(http.StatusBadRequest)
-				return c.JSON(presenters.ErrorResponse(err.Error()))
+				return c.JSON(presenters.FailResponse(translatedErrors))
 			}
 			c.Status(http.StatusInternalServerError)
 			return c.JSON(presenters.ErrorResponse(messages.ROLE_FAIL_TO_INSERT_ERROR_MESSAGE))
@@ -113,8 +115,9 @@ func UpdateRole(roleService roles.Service) fiber.Handler {
 		updatedRole, err, isValidationError := roleService.UpdateRole(updateReq)
 		if err != nil {
 			if isValidationError {
+				translatedErrors := validator.TranslateError(err)
 				c.Status(http.StatusBadRequest)
-				return c.JSON(presenters.ErrorResponse(err.Error()))
+				return c.JSON(presenters.FailResponse(translatedErrors))
 			}
 			c.Status(http.StatusInternalServerError)
 			return c.JSON(presenters.ErrorResponse(messages.ROLE_FAIL_TO_UPDATE_ERROR_MESSAGE))

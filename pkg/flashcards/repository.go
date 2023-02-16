@@ -32,7 +32,6 @@ func (r *repository) CreateFlashcard(f *models.Flashcard) (*models.Flashcard, er
 	err := validator.ValidateStruct(f)
 	if err != nil {
 		if validator.IsValidationError(err) {
-			err = validator.TranslateError(err)
 			return nil, err, true
 		}
 		return nil, err, false
@@ -65,7 +64,6 @@ func (r *repository) UpdateFlashcard(f *models.Flashcard) (*models.Flashcard, er
 	err := validator.ValidateStruct(f)
 	if err != nil {
 		if validator.IsValidationError(err) {
-			err = validator.TranslateError(err)
 			return nil, err, true
 		}
 		return nil, err, false

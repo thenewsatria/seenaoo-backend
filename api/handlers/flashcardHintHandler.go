@@ -8,6 +8,7 @@ import (
 	"github.com/thenewsatria/seenaoo-backend/pkg/flashcardhints"
 	"github.com/thenewsatria/seenaoo-backend/pkg/flashcards"
 	"github.com/thenewsatria/seenaoo-backend/pkg/models"
+	"github.com/thenewsatria/seenaoo-backend/utils/validator"
 	"github.com/thenewsatria/seenaoo-backend/variables/messages"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -31,8 +32,9 @@ func AddFlashcardHint(flashcardHintService flashcardhints.Service, flashcardServ
 		result, err, isValidationError := flashcardHintService.InsertFlashcardHint(flashcardHint)
 		if err != nil {
 			if isValidationError {
+				translatedErrors := validator.TranslateError(err)
 				c.Status(http.StatusBadRequest)
-				return c.JSON(presenters.ErrorResponse(err.Error()))
+				return c.JSON(presenters.FailResponse(translatedErrors))
 			}
 			c.Status(http.StatusInternalServerError)
 			return c.JSON(presenters.ErrorResponse(messages.FLASHCARD_HINT_FAIL_TO_INSERT_ERROR_MESSAGE))
@@ -70,8 +72,9 @@ func UpdateFlashcardHint(flashcardHintService flashcardhints.Service) fiber.Hand
 		updatedFlashcardHint, err, isValidationError := flashcardHintService.UpdateFlashcardHint(updateBody)
 		if err != nil {
 			if isValidationError {
+				translatedErrors := validator.TranslateError(err)
 				c.Status(http.StatusBadRequest)
-				return c.JSON((presenters.ErrorResponse(err.Error())))
+				return c.JSON(presenters.FailResponse(translatedErrors))
 			}
 			c.Status(http.StatusInternalServerError)
 			return c.JSON(presenters.ErrorResponse(messages.FLASHCARD_HINT_FAIL_TO_UPDATE_ERROR_MESSAGE))

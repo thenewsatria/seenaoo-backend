@@ -18,7 +18,6 @@ import (
 	"github.com/thenewsatria/seenaoo-backend/pkg/refreshtokens"
 	"github.com/thenewsatria/seenaoo-backend/pkg/roles"
 	"github.com/thenewsatria/seenaoo-backend/pkg/tags"
-	"github.com/thenewsatria/seenaoo-backend/pkg/tests"
 	"github.com/thenewsatria/seenaoo-backend/pkg/userprofiles"
 	"github.com/thenewsatria/seenaoo-backend/pkg/users"
 )
@@ -64,10 +63,6 @@ func Router(app *fiber.App) {
 	var permissionRepo = permissions.NewRepo(permissionCollection)
 	var permissionService = permissions.NewService(permissionRepo)
 
-	var testCollection = database.UseDB().Collection(tests.CollectionName)
-	var testRepo = tests.NewRepo(testCollection)
-	var testService = tests.NewService(testRepo)
-
 	api := app.Group("/api")
 	apiV1 := api.Group("/v1")
 
@@ -107,7 +102,6 @@ func Router(app *fiber.App) {
 		flashcardCoverService, roleService, permissionService)
 	tagRouter(apiV1, tagService, flashcardCoverService)
 	permissionRouter(apiV1, permissionService)
-	testRouter(apiV1, testService)
 
 	userRouter(apiV1, userProfileService, userService)
 

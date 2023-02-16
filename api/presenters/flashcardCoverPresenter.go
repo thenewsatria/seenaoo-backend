@@ -46,9 +46,8 @@ func FlashcardCoverSuccessResponse(fcCover *models.FlashcardCover) *fiber.Map {
 		UpdatedAt:   fcCover.UpdatedAt,
 	}
 	return &fiber.Map{
-		"success": true,
+		"success": "success",
 		"data":    flashcardCvr,
-		"error":   nil,
 	}
 }
 
@@ -67,10 +66,6 @@ func FlashcardCoverDetailSuccessResponse(fcCover *models.FlashcardCover, tags *[
 		Username: author.Username,
 		Email:    author.Email,
 		Profile:  *userProfile,
-		// DisplayName:     author.DisplayName,
-		// AvatarImagePath: author.AvatarImagePath,
-		// Biography:       author.Biography,
-		// IsVerified:      author.IsVerified,
 	}
 
 	flashcardCvrDetail := &FlashcardCoverDetail{
@@ -110,8 +105,7 @@ func FlashcardCoverDetailSuccessResponse(fcCover *models.FlashcardCover, tags *[
 	}
 
 	return &fiber.Map{
-		"success": true,
+		"success": "success",
 		"data":    flashcardCvrDetail,
-		"error":   nil,
 	}
 }

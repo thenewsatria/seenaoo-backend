@@ -27,9 +27,8 @@ func TagSuccessResponse(t *models.Tag) *fiber.Map {
 		TagName: t.TagName,
 	}
 	return &fiber.Map{
-		"success": true,
+		"success": "success",
 		"data":    tag,
-		"error":   nil,
 	}
 }
 
@@ -62,8 +61,7 @@ func TagDetailSuccessResponse(t *models.Tag, fcs *[]models.FlashcardCover) *fibe
 	}
 
 	return &fiber.Map{
-		"success": true,
+		"success": "success",
 		"data":    tag,
-		"error":   nil,
 	}
 }

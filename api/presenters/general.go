@@ -10,17 +10,15 @@ type BatchOperation struct {
 
 func ErrorResponse(msg string) *fiber.Map {
 	return &fiber.Map{
-		"status": false,
-		"data":   "",
-		"error":  msg,
+		"status":  "error",
+		"message": msg,
 	}
 }
 
-func MultipleErrorResponse(messages []string) *fiber.Map {
+func FailResponse(data map[string]interface{}) *fiber.Map {
 	return &fiber.Map{
-		"status": false,
-		"data":   "",
-		"error":  messages,
+		"status": "fail",
+		"data":   data,
 	}
 }
 
@@ -31,8 +29,7 @@ func BatchOperationResponse(operationType, itemType string, numberOfItemAffected
 		NumberOfItemAffected: numberOfItemAffected,
 	}
 	return &fiber.Map{
-		"status": true,
+		"status": "success",
 		"data":   batchOps,
-		"error":  nil,
 	}
 }

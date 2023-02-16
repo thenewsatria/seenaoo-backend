@@ -32,7 +32,6 @@ func (r *repository) CreateProfile(up *models.UserProfile) (*models.UserProfile,
 	err := validator.ValidateStruct(up)
 	if err != nil {
 		if validator.IsValidationError(err) {
-			err = validator.TranslateError(err)
 			return nil, err, true
 		}
 
@@ -80,7 +79,6 @@ func (r *repository) UpdateProfile(up *models.UserProfile) (*models.UserProfile,
 	err := validator.ValidateStruct(up)
 	if err != nil {
 		if validator.IsValidationError(err) {
-			err = validator.TranslateError(err)
 			return nil, err, true
 		}
 		return nil, err, false

@@ -32,7 +32,6 @@ func (r *repository) CreateTag(t *models.Tag) (*models.Tag, error, bool) {
 	err := validator.ValidateStruct(t)
 	if err != nil {
 		if validator.IsValidationError(err) {
-			err = validator.TranslateError(err)
 			return nil, err, true
 		}
 		return nil, err, false

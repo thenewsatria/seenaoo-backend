@@ -28,14 +28,13 @@ func IsValidationError(err error) bool {
 	return ok
 }
 
-func TranslateError(err error) error {
+func TranslateError(err error) map[string]interface{} {
 	errs := err.(validator.ValidationErrors)
-	errorList := []string{}
+	errorList := map[string]interface{}{}
 	for _, e := range errs {
-		errorList = append(errorList, e.Translate(translator))
+		errorList[e.StructField()] = e.Translate(translator)
 	}
-	errOut := strings.Join(errorList, ", ")
-	return errors.New(errOut)
+	return errorList
 }
 
 func IsEmail(email string) error {

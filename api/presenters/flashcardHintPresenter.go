@@ -17,8 +17,7 @@ func FlashcardHintSuccessResponse(fh *models.FlashcardHint) *fiber.Map {
 		HintText: fh.HintText,
 	}
 	return &fiber.Map{
-		"status": true,
+		"status": "success",
 		"data":   flashcardHint,
-		"error":  nil,
 	}
 }

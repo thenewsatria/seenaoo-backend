@@ -181,8 +181,9 @@ func EditUserProfile(userProfileService userprofiles.Service) fiber.Handler {
 			}
 			// Cek apakah merupakan error validasi
 			if isValidationErr {
+				translatedErrors := validator.TranslateError(err)
 				c.Status(http.StatusBadRequest)
-				return c.JSON(presenters.ErrorResponse(err.Error()))
+				return c.JSON(presenters.FailResponse(translatedErrors))
 			}
 
 			c.Status(http.StatusInternalServerError)
@@ -245,8 +246,9 @@ func DeleteProfileBanner(userProfileService userprofiles.Service) fiber.Handler 
 		updatedUserProfile, err, isValidationError := userProfileService.UpdateProfile(currentUserProfile)
 		if err != nil {
 			if isValidationError {
+				translatedErrors := validator.TranslateError(err)
 				c.Status(http.StatusBadRequest)
-				return c.JSON(presenters.ErrorResponse(err.Error()))
+				return c.JSON(presenters.FailResponse(translatedErrors))
 			}
 			c.Status(http.StatusInternalServerError)
 			return c.JSON(presenters.ErrorResponse(messages.USER_PROFILE_FAIL_TO_UPDATE_ERROR_MESSAGE))
@@ -298,8 +300,9 @@ func DeleteProfileAvatar(userProfileService userprofiles.Service) fiber.Handler 
 		updatedUserProfile, err, isValidationError := userProfileService.UpdateProfile(currentUserProfile)
 		if err != nil {
 			if isValidationError {
+				translatedErrors := validator.TranslateError(err)
 				c.Status(http.StatusBadRequest)
-				return c.JSON(presenters.ErrorResponse(err.Error()))
+				return c.JSON(presenters.FailResponse(translatedErrors))
 			}
 			c.Status(http.StatusInternalServerError)
 			return c.JSON(presenters.ErrorResponse(messages.USER_PROFILE_FAIL_TO_UPDATE_ERROR_MESSAGE))

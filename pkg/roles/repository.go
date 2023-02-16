@@ -32,7 +32,6 @@ func (r *repository) CreateRole(rl *models.Role) (*models.Role, error, bool) {
 	err := validator.ValidateStruct(rl)
 	if err != nil {
 		if validator.IsValidationError(err) {
-			err = validator.TranslateError(err)
 			return nil, err, true
 		}
 		return nil, err, false
@@ -101,7 +100,6 @@ func (r *repository) UpdateRole(rl *models.Role) (*models.Role, error, bool) {
 	err := validator.ValidateStruct(rl)
 	if err != nil {
 		if validator.IsValidationError(err) {
-			err = validator.TranslateError(err)
 			return nil, err, true
 		}
 		return nil, err, false

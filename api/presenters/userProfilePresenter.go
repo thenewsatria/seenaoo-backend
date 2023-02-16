@@ -31,9 +31,8 @@ func UserProfileSuccessResponse(up *models.UserProfile) *fiber.Map {
 		IsVerified:      up.IsVerified,
 	}
 	return &fiber.Map{
-		"status": true,
+		"status": "success",
 		"data":   userProfile,
-		"error":  nil,
 	}
 }
 
@@ -53,8 +52,7 @@ func UserProfileDetailSuccessResponse(up *models.UserProfile, u *models.User) *f
 	}
 
 	return &fiber.Map{
-		"status": true,
+		"status": "success",
 		"data":   userProfile,
-		"error":  nil,
 	}
 }

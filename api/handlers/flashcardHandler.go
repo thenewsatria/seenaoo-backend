@@ -182,8 +182,9 @@ func AddFlashcard(flashcardService flashcards.Service, flashcardCoverService fla
 				}
 			}
 			if isValidationError {
+				translatedErrors := validator.TranslateError(err)
 				c.Status(http.StatusBadRequest)
-				return c.JSON(presenters.ErrorResponse(err.Error()))
+				return c.JSON(presenters.FailResponse(translatedErrors))
 			}
 			c.Status(http.StatusInternalServerError)
 			return c.JSON(presenters.ErrorResponse(messages.FLASHCARD_FAIL_TO_INSERT_ERROR_MESSAGE))
@@ -388,8 +389,9 @@ func UpdateFlashcard(flashcardService flashcards.Service) fiber.Handler {
 				}
 			}
 			if isValidationError {
+				translatedErrors := validator.TranslateError(err)
 				c.Status(http.StatusBadRequest)
-				return c.JSON(presenters.ErrorResponse(err.Error()))
+				return c.JSON(presenters.FailResponse(translatedErrors))
 			}
 			c.Status(http.StatusInternalServerError)
 			return c.JSON(presenters.ErrorResponse(messages.FLASHCARD_FAIL_TO_UPDATE_ERROR_MESSAGE))
@@ -538,8 +540,9 @@ func DeleteFlashcardFrontImage(flashcardService flashcards.Service) fiber.Handle
 		updatedFlashcard, err, isValidationError := flashcardService.UpdateFlashcard(flashcard)
 		if err != nil {
 			if isValidationError {
+				translatedErrors := validator.TranslateError(err)
 				c.Status(http.StatusBadRequest)
-				return c.JSON(presenters.ErrorResponse(err.Error()))
+				return c.JSON(presenters.FailResponse(translatedErrors))
 			}
 			c.Status(http.StatusInternalServerError)
 			return c.JSON(presenters.ErrorResponse(messages.FLASHCARD_FAIL_TO_UPDATE_ERROR_MESSAGE))
@@ -585,8 +588,9 @@ func DeleteFlashcardBackImage(flashcardService flashcards.Service) fiber.Handler
 		updatedFlashcard, err, isValidationError := flashcardService.UpdateFlashcard(flashcard)
 		if err != nil {
 			if isValidationError {
+				translatedErrors := validator.TranslateError(err)
 				c.Status(http.StatusBadRequest)
-				return c.JSON(presenters.ErrorResponse(err.Error()))
+				return c.JSON(presenters.FailResponse(translatedErrors))
 			}
 			c.Status(http.StatusInternalServerError)
 			return c.JSON(presenters.ErrorResponse(messages.FLASHCARD_FAIL_TO_UPDATE_ERROR_MESSAGE))

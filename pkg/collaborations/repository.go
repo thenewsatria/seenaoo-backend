@@ -30,7 +30,6 @@ func (r *repository) UpdateCollaboration(cl *models.Collaboration) (*models.Coll
 	err := validator.ValidateStruct(cl)
 	if err != nil {
 		if validator.IsValidationError(err) {
-			err = validator.TranslateError(err)
 			return nil, err, true
 		}
 		return nil, err, false
@@ -78,7 +77,6 @@ func (r *repository) CreateCollaboration(cl *models.Collaboration) (*models.Coll
 	err := validator.ValidateStruct(cl)
 	if err != nil {
 		if validator.IsValidationError(err) {
-			err = validator.TranslateError(err)
 			return nil, err, true
 		}
 		return nil, err, false

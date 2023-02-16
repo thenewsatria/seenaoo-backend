@@ -13,8 +13,7 @@ func AuthenticationSuccessResponse(accessToken string, refreshToken string) *fib
 		RefreshToken: refreshToken,
 	}
 	return &fiber.Map{
-		"status": true,
+		"status": "success",
 		"data":   auth,
-		"error":  nil,
 	}
 }

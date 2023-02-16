@@ -30,7 +30,6 @@ func (r *repository) CreateRefreshToken(rt *models.RefreshToken) (*models.Refres
 	err := validator.ValidateStruct(rt)
 	if err != nil {
 		if validator.IsValidationError(err) {
-			err = validator.TranslateError(err)
 			return nil, err, true
 		}
 		return nil, err, false
@@ -60,7 +59,6 @@ func (r *repository) UpdateRefreshToken(rt *models.RefreshToken) (*models.Refres
 	err := validator.ValidateStruct(rt)
 	if err != nil {
 		if validator.IsValidationError(err) {
-			err = validator.TranslateError(err)
 			return nil, err, true
 		}
 		return nil, err, false

@@ -5,6 +5,7 @@ import (
 
 	"github.com/thenewsatria/seenaoo-backend/database"
 	"github.com/thenewsatria/seenaoo-backend/pkg/models"
+	"github.com/thenewsatria/seenaoo-backend/utils"
 	"github.com/thenewsatria/seenaoo-backend/utils/validator"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -29,11 +30,18 @@ func (r *repository) CreateUser(u *models.User) (*models.User, error, bool) {
 	err := validator.ValidateStruct(u)
 	if err != nil {
 		if validator.IsValidationError(err) {
-			err = validator.TranslateError(err)
 			return nil, err, true
 		}
 		return nil, err, false
 	}
+
+	hashedPw, err := utils.HashPassword(u.Password)
+	if err != nil {
+		return nil, err, false
+	}
+
+	u.Password = hashedPw
+
 	_, err = r.Collection.InsertOne(database.GetDBContext(), u)
 	if err != nil {
 		return nil, err, false

@@ -11,6 +11,7 @@ import (
 	"github.com/thenewsatria/seenaoo-backend/pkg/roles"
 	"github.com/thenewsatria/seenaoo-backend/pkg/userprofiles"
 	"github.com/thenewsatria/seenaoo-backend/pkg/users"
+	"github.com/thenewsatria/seenaoo-backend/utils/validator"
 	"github.com/thenewsatria/seenaoo-backend/variables/messages"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -77,8 +78,9 @@ func AddCollaboration(collaboratorService collaborations.Service, userService us
 				createdCollaboration, err, isValidationError := collaboratorService.InsertCollaboration(collaboration)
 				if err != nil {
 					if isValidationError {
+						translatedErrors := validator.TranslateError(err)
 						c.Status(http.StatusBadRequest)
-						return c.JSON(presenters.ErrorResponse(err.Error()))
+						return c.JSON(presenters.FailResponse(translatedErrors))
 					}
 					c.Status(http.StatusInternalServerError)
 					return c.JSON(presenters.ErrorResponse(messages.COLLABORATION_FAIL_TO_INSERT_ERROR_MESSAGE))
@@ -96,8 +98,9 @@ func AddCollaboration(collaboratorService collaborations.Service, userService us
 			updatedCollab, err, isValidationError := collaboratorService.UpdateCollaboration(existedCollab)
 			if err != nil {
 				if isValidationError {
+					translatedErrors := validator.TranslateError(err)
 					c.Status(http.StatusBadRequest)
-					return c.JSON(presenters.ErrorResponse(err.Error()))
+					return c.JSON(presenters.FailResponse(translatedErrors))
 				}
 				c.Status(http.StatusInternalServerError)
 				return c.JSON(presenters.ErrorResponse(messages.COLLABORATION_FAIL_TO_UPDATE_ERROR_MESSAGE))
@@ -227,8 +230,9 @@ func UpdateCollabStatus(service collaborations.Service) fiber.Handler {
 		updatedCollab, err, isValidationError := service.UpdateCollaboration(collab)
 		if err != nil {
 			if isValidationError {
+				translatedErrors := validator.TranslateError(err)
 				c.Status(http.StatusBadRequest)
-				return c.JSON(presenters.ErrorResponse(err.Error()))
+				return c.JSON(presenters.FailResponse(translatedErrors))
 			}
 			c.Status(http.StatusInternalServerError)
 			return c.JSON(presenters.ErrorResponse(messages.COLLABORATION_FAIL_TO_UPDATE_ERROR_MESSAGE))
@@ -265,8 +269,9 @@ func UpdateCollaboration(service collaborations.Service) fiber.Handler {
 		updatedCollab, err, isValidationError := service.UpdateCollaboration(collab)
 		if err != nil {
 			if isValidationError {
+				translatedErrors := validator.TranslateError(err)
 				c.Status(http.StatusBadRequest)
-				return c.JSON(presenters.ErrorResponse(err.Error()))
+				return c.JSON(presenters.FailResponse(translatedErrors))
 			}
 			c.Status(http.StatusInternalServerError)
 			return c.JSON(presenters.ErrorResponse(messages.COLLABORATION_FAIL_TO_UPDATE_ERROR_MESSAGE))

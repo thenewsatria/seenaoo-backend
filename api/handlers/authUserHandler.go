@@ -22,13 +22,7 @@ func RegisterUser(userService users.Service, refreshTokenService refreshtokens.S
 			c.Status(http.StatusBadRequest)
 			return c.JSON(presenters.ErrorResponse(messages.USER_BODY_PARSER_ERROR_MESSAGE))
 		}
-		hashedPw, err := utils.HashPassword(user.Password)
-		if err != nil {
-			c.Status(http.StatusBadRequest)
-			return c.JSON(presenters.ErrorResponse(messages.USER_FAIL_TO_HASH_PASSWORD_ERROR_MESSAGE))
-		}
 
-		user.Password = hashedPw
 		userEmail := &models.UserByEmailRequest{
 			Email: user.Email,
 		}
@@ -37,11 +31,19 @@ func RegisterUser(userService users.Service, refreshTokenService refreshtokens.S
 		}
 		if userService.CheckEmailIsExist(userEmail) {
 			c.Status(http.StatusBadRequest)
-			return c.JSON(presenters.ErrorResponse(messages.USER_EMAIL_ALREADY_USED_ERROR_MESSAGE))
+			return c.JSON(presenters.FailResponse(
+				map[string]interface{}{
+					"Email": messages.USER_EMAIL_ALREADY_USED_ERROR_MESSAGE,
+				},
+			))
 		}
 		if userService.CheckUsernameIsExist(userUsername) {
 			c.Status(http.StatusBadRequest)
-			return c.JSON(presenters.ErrorResponse(messages.USER_USERNAME_ALREADY_USED_ERROR_MESSAGE))
+			return c.JSON(presenters.FailResponse(
+				map[string]interface{}{
+					"Username": messages.USER_USERNAME_ALREADY_USED_ERROR_MESSAGE,
+				},
+			))
 		}
 		accessTokenStr, err := utils.GenerateAccessToken(user)
 		if err != nil {
@@ -58,8 +60,9 @@ func RegisterUser(userService users.Service, refreshTokenService refreshtokens.S
 		_, err, isValidationError := userService.InsertUser(user)
 		if err != nil {
 			if isValidationError {
+				translatedErrors := validator.TranslateError(err)
 				c.Status(http.StatusBadRequest)
-				return c.JSON(presenters.ErrorResponse(err.Error()))
+				return c.JSON(presenters.FailResponse(translatedErrors))
 			}
 			c.Status(http.StatusInternalServerError)
 			return c.JSON(presenters.ErrorResponse(messages.USER_FAIL_TO_INSERT_ERROR_MESSAGE))
@@ -75,8 +78,9 @@ func RegisterUser(userService users.Service, refreshTokenService refreshtokens.S
 		_, err, isValidationError = userProfileService.InsertProfile(userProfile)
 		if err != nil {
 			if isValidationError {
+				translatedErrors := validator.TranslateError(err)
 				c.Status(http.StatusBadRequest)
-				return c.JSON(presenters.ErrorResponse(err.Error()))
+				return c.JSON(presenters.FailResponse(translatedErrors))
 			}
 			c.Status(http.StatusInternalServerError)
 			return c.JSON(presenters.ErrorResponse(messages.USER_PROFILE_FAIL_TO_INSERT_ERROR_MESSAGE))
@@ -92,8 +96,9 @@ func RegisterUser(userService users.Service, refreshTokenService refreshtokens.S
 		_, err, isValidationError = refreshTokenService.InsertRefreshToken(refreshToken)
 		if err != nil {
 			if isValidationError {
+				translatedErrors := validator.TranslateError(err)
 				c.Status(http.StatusBadRequest)
-				return c.JSON(presenters.ErrorResponse(err.Error()))
+				return c.JSON(presenters.FailResponse(translatedErrors))
 			}
 			c.Status(http.StatusInternalServerError)
 			return c.JSON(presenters.ErrorResponse(messages.REFRESH_TOKEN_FAIL_TO_INSERT_ERROR_MESSAGE))
@@ -172,8 +177,9 @@ func UserLogin(userService users.Service, refreshTokenService refreshtokens.Serv
 		updatedToken, err, isValidationError := refreshTokenService.UpdateRefreshToken(userRefToken)
 		if err != nil {
 			if isValidationError {
+				translatedErrors := validator.TranslateError(err)
 				c.Status(http.StatusBadRequest)
-				return c.JSON(presenters.ErrorResponse(err.Error()))
+				return c.JSON(presenters.FailResponse(translatedErrors))
 			}
 			c.Status(http.StatusInternalServerError)
 			return c.JSON(presenters.ErrorResponse(messages.REFRESH_TOKEN_FAIL_TO_FETCH_ERROR_MESSAGE))
@@ -207,8 +213,9 @@ func UserLogout(refreshTokenService refreshtokens.Service) fiber.Handler {
 		_, err, isValidationError := refreshTokenService.UpdateRefreshToken(userRefToken)
 		if err != nil {
 			if isValidationError {
+				translatedErrors := validator.TranslateError(err)
 				c.Status(http.StatusBadRequest)
-				return c.JSON(presenters.ErrorResponse(err.Error()))
+				return c.JSON(presenters.FailResponse(translatedErrors))
 			}
 			c.Status(http.StatusInternalServerError)
 			return c.JSON(presenters.ErrorResponse(messages.REFRESH_TOKEN_FAIL_TO_FETCH_ERROR_MESSAGE))
@@ -293,8 +300,9 @@ func RefreshToken(refreshTokenService refreshtokens.Service, userService users.S
 		updatedToken, err, isValidationError := refreshTokenService.UpdateRefreshToken(refTok)
 		if err != nil {
 			if isValidationError {
+				translatedErrors := validator.TranslateError(err)
 				c.Status(http.StatusBadRequest)
-				return c.JSON(presenters.ErrorResponse(err.Error()))
+				return c.JSON(presenters.FailResponse(translatedErrors))
 			}
 			c.Status(http.StatusInternalServerError)
 			return c.JSON(presenters.ErrorResponse(messages.REFRESH_TOKEN_FAIL_TO_UPDATE_STORED_TOKEN_ERROR_MESSAGE))

@@ -32,9 +32,8 @@ func UserDetailSuccessResponse(u *models.User, p *models.UserProfile) *fiber.Map
 	}
 
 	return &fiber.Map{
-		"status": true,
+		"status": "success",
 		"data":   userDetail,
-		"error":  nil,
 	}
 }
 
@@ -43,8 +42,7 @@ func UserInsertSuccessResponse(u *models.User) *fiber.Map {
 		Username: u.Username,
 	}
 	return &fiber.Map{
-		"status": true,
+		"status": "success",
 		"data":   user,
-		"error":  nil,
 	}
 }

@@ -117,8 +117,9 @@ func AddFlashcardCover(flashcardCoverService flashcardcovers.Service, tagService
 						newTag, err, isValidationError := tagService.InsertTag(tag)
 						if err != nil {
 							if isValidationError {
+								translatedErrors := validator.TranslateError(err)
 								c.Status(http.StatusBadRequest)
-								return c.JSON(presenters.ErrorResponse(err.Error()))
+								return c.JSON(presenters.FailResponse(translatedErrors))
 							}
 							c.Status(http.StatusInternalServerError)
 							return c.JSON(presenters.ErrorResponse(messages.TAG_FAIL_TO_INSERT_ERROR_MESSAGE))
@@ -147,8 +148,9 @@ func AddFlashcardCover(flashcardCoverService flashcardcovers.Service, tagService
 				}
 			}
 			if isValidationError {
+				translatedErrors := validator.TranslateError(err)
 				c.Status(http.StatusBadRequest)
-				return c.JSON(presenters.ErrorResponse(err.Error()))
+				return c.JSON(presenters.FailResponse(translatedErrors))
 			}
 			c.Status(http.StatusInternalServerError)
 			return c.JSON(presenters.ErrorResponse(messages.FLASHCARD_COVER_FAIL_TO_INSERT_ERROR_MESSAGE))
@@ -327,8 +329,9 @@ func UpdateFlashcardCover(flashcardCoverService flashcardcovers.Service, tagServ
 						newTag, err, isValidationError := tagService.InsertTag(tag)
 						if err != nil {
 							if isValidationError {
+								translatedErrors := validator.TranslateError(err)
 								c.Status(http.StatusBadRequest)
-								return c.JSON(presenters.ErrorResponse(err.Error()))
+								return c.JSON(presenters.FailResponse(translatedErrors))
 							}
 							c.Status(http.StatusInternalServerError)
 							return c.JSON(presenters.ErrorResponse(messages.TAG_FAIL_TO_INSERT_ERROR_MESSAGE))
@@ -358,8 +361,9 @@ func UpdateFlashcardCover(flashcardCoverService flashcardcovers.Service, tagServ
 				}
 			}
 			if isValidationError {
+				translatedErrors := validator.TranslateError(err)
 				c.Status(http.StatusBadRequest)
-				return c.JSON(presenters.ErrorResponse(err.Error()))
+				return c.JSON(presenters.FailResponse(translatedErrors))
 			}
 			c.Status(http.StatusInternalServerError)
 			return c.JSON(presenters.ErrorResponse(messages.FLASHCARD_COVER_FAIL_TO_UPDATE_ERROR_MESSAGE))
@@ -506,8 +510,9 @@ func DeleteFlashcardCoverImage(flashcardCoverService flashcardcovers.Service) fi
 		updatedFlashcardCover, err, isValidationError := flashcardCoverService.UpdateFlashcardCover(fcCover)
 		if err != nil {
 			if isValidationError {
+				translatedErrors := validator.TranslateError(err)
 				c.Status(http.StatusBadRequest)
-				return c.JSON(presenters.ErrorResponse(err.Error()))
+				return c.JSON(presenters.FailResponse(translatedErrors))
 			}
 			c.Status(http.StatusInternalServerError)
 			return c.JSON(presenters.ErrorResponse(messages.USER_PROFILE_FAIL_TO_UPDATE_ERROR_MESSAGE))
