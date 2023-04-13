@@ -1,5 +1,15 @@
 package messages
 
+import "os"
+
+func ternaryMessage(trueCondition bool, trueMessage string, falseMessage string) string {
+	if trueCondition {
+		return trueMessage
+	} else {
+		return falseMessage
+	}
+}
+
 var FLASHCARD_NOT_FOUND_ERROR_MESSAGE = "Flashcard with provided id is not found"
 var FLASHCARD_BODY_PARSER_ERROR_MESSAGE = "Error parsing flashcard body request"
 var FLASHCARD_FAIL_TO_INSERT_ERROR_MESSAGE = "Failed to insert flashcard to database"
@@ -33,9 +43,12 @@ var USER_PROFILE_FAIL_TO_UPDATE_ERROR_MESSAGE = "Failed to update user profile"
 var AUTH_FAIL_TO_GENERATE_ACCESS_TOKEN_ERROR_MESSAGE = "Failed to generate access token"
 var AUTH_FAIL_TO_GENERATE_REFRESH_TOKEN_ERROR_MESSAGE = "Failed to generate refresh token"
 var AUTH_BODY_PARSER_ERROR_MESSAGE = "Error parsing user credential body request"
-var AUTH_EMAIL_INCORRECT_ERROR_MESSAGE = "Provided email is incorrect"
-var AUTH_USERNAME_INCORRECT_ERROR_MESSAGE = "Provided username is incorrect"
-var AUTH_PASSWORD_INCORRECT_ERROR_MESSAGE = "Provided password is incorrect"
+var AUTH_EMAIL_INCORRECT_ERROR_MESSAGE = ternaryMessage(os.Getenv("GO_ENV") == "DEVELOPMENT",
+	"Provided email is incorrect", "Wrong combination of username / email and password")
+var AUTH_USERNAME_INCORRECT_ERROR_MESSAGE = ternaryMessage(os.Getenv("GO_ENV") == "DEVELOPMENT",
+	"Provided username is incorrect", "Wrong combination of username / email and password")
+var AUTH_PASSWORD_INCORRECT_ERROR_MESSAGE = ternaryMessage(os.Getenv("GO_ENV") == "DEVELOPMENT",
+	"Provided password is incorrect", "Wrong combination of username / email and password")
 var AUTH_TOKEN_NOT_EXIST_ERROR_MESSAGE = "Token is not exist"
 var AUTH_TOKEN_INVALID_ERROR_MESSAGE = "Token Invalid, try login again"
 var AUTH_ACCESS_TOKEN_EXPIRED_ERROR_MESSAGE = "Access token expired please refresh access token"
